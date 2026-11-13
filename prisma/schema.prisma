@@ -65,6 +65,7 @@ model User {
   sessions              Session[]
   ownedClassrooms       Classroom[]           @relation("ClassroomOwner")
   memberships           ClassroomMembership[]
+  groupMemberships      StudentGroupMember[]
   createdTickets        Ticket[]              @relation("TicketCreator")
   assignments           TicketAssignment[]
   comments              TicketComment[]
@@ -119,7 +120,33 @@ model Classroom {
 
   owner       User                  @relation("ClassroomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   memberships ClassroomMembership[]
+  groups      StudentGroup[]
   tickets     Ticket[]
+}
+
+model StudentGroup {
+  id          String   @id @default(cuid())
+  classroomId String
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  classroom Classroom           @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  members   StudentGroupMember[]
+
+  @@unique([classroomId, name])
+}
+
+model StudentGroupMember {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  group StudentGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
 }
 
 model ClassroomMembership {

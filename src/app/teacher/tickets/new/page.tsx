@@ -18,6 +18,10 @@ export default async function NewTicketPage({
           user: { select: { id: true, name: true, role: true } },
         },
       },
+      groups: {
+        include: { members: true },
+        orderBy: { name: "asc" },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -29,6 +33,11 @@ export default async function NewTicketPage({
     students: c.memberships
       .filter((m) => m.user.role === "STUDENT")
       .map((m) => ({ id: m.user.id, name: m.user.name })),
+    groups: c.groups.map((g) => ({
+      id: g.id,
+      name: g.name,
+      memberIds: g.members.map((m) => m.userId),
+    })),
   }));
 
   return (

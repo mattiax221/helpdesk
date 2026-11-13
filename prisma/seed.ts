@@ -9,6 +9,8 @@ async function main() {
   await prisma.ticketComment.deleteMany();
   await prisma.ticketAssignment.deleteMany();
   await prisma.ticket.deleteMany();
+  await prisma.studentGroupMember.deleteMany();
+  await prisma.studentGroup.deleteMany();
   await prisma.classroomMembership.deleteMany();
   await prisma.classroom.deleteMany();
   await prisma.session.deleteMany();
@@ -58,6 +60,25 @@ async function main() {
           { userId: teacher.id },
           ...students.map((s) => ({ userId: s.id })),
         ],
+      },
+    },
+  });
+
+  await prisma.studentGroup.create({
+    data: {
+      classroomId: classroom.id,
+      name: "Team Reti Alfa",
+      members: {
+        create: [{ userId: students[0].id }, { userId: students[1].id }],
+      },
+    },
+  });
+  await prisma.studentGroup.create({
+    data: {
+      classroomId: classroom.id,
+      name: "Team Sicurezza Beta",
+      members: {
+        create: [{ userId: students[1].id }, { userId: students[2].id }],
       },
     },
   });

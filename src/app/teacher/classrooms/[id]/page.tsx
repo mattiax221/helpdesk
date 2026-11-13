@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CATEGORY_LABELS, PRIORITY_LABELS, STATUS_LABELS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { AddStudentForm } from "@/components/teacher/add-student-form";
+import { GroupsPanel } from "@/components/teacher/groups-panel";
 
 export default async function ClassroomDetailPage({
   params,
@@ -33,6 +34,16 @@ export default async function ClassroomDetailPage({
             },
           },
         },
+      },
+      groups: {
+        include: {
+          members: {
+            include: {
+              user: { select: { id: true, name: true, firstName: true, lastName: true } },
+            },
+          },
+        },
+        orderBy: { name: "asc" },
       },
       tickets: {
         include: {
@@ -69,29 +80,37 @@ export default async function ClassroomDetailPage({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Studenti ({students.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <AddStudentForm classroomId={classroom.id} />
-            <p className="text-xs text-muted-foreground">
-              Aggiungi gli studenti al roster, poi condividono il codice {classroom.code} per entrare.
-            </p>
-            {students.length === 0 && (
-              <p className="text-sm text-muted-foreground">Nessuno studente nel roster.</p>
-            )}
-            {students.map((m) => (
-              <div
-                key={m.id}
-                className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
-              >
-                <span>{m.user.name}</span>
-                <Badge variant="secondary">{m.user.xp} XP</Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Studenti ({students.length})</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <AddStudentForm classroomId={classroom.id} />
+              <p className="text-xs text-muted-foreground">
+                Aggiungi gli studenti al roster, poi condividono il codice {classroom.code} per entrare.
+              </p>
+              {students.length === 0 && (
+                <p className="text-sm text-muted-foreground">Nessuno studente nel roster.</p>
+              )}
+              {students.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
+                >
+                  <span>{m.user.name}</span>
+                  <Badge variant="secondary">{m.user.xp} XP</Badge>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <GroupsPanel
+            classroomId={classroom.id}
+            students={students.map((m) => ({ id: m.user.id, name: m.user.name }))}
+            initialGroups={classroom.groups}
+          />
+        </div>
 
         <div className="space-y-3">
           <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
@@ -137,3 +156,4 @@ export default async function ClassroomDetailPage({
     </AppShell>
   );
 }
+

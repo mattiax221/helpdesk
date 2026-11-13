@@ -24,6 +24,7 @@ type ClassroomOption = {
   name: string;
   code: string;
   students: { id: string; name: string | null }[];
+  groups: { id: string; name: string; memberIds: string[] }[];
 };
 
 const categories = Object.keys(CATEGORY_LABELS) as (keyof typeof CATEGORY_LABELS)[];
@@ -41,8 +42,9 @@ export function TicketForm({
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [classroomId, setClassroomId] = useState(defaultClassroomId || classrooms[0]?.id || "");
-  const [assignTo, setAssignTo] = useState<"all" | "selected">("all");
+  const [assignTo, setAssignTo] = useState<"all" | "selected" | "group">("all");
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [groupId, setGroupId] = useState("");
   const [catalog, setCatalog] = useState<
     { id: number; title: string; category: string; difficulty: string; priority: string }[]
   >([]);
@@ -97,6 +99,15 @@ export function TicketForm({
     () => classrooms.find((c) => c.id === classroomId)?.students || [],
     [classrooms, classroomId],
   );
+  const groups = useMemo(
+    () => classrooms.find((c) => c.id === classroomId)?.groups || [],
+    [classrooms, classroomId],
+  );
+
+  useEffect(() => {
+    setGroupId(groups[0]?.id || "");
+    setSelectedStudents([]);
+  }, [classroomId, groups]);
 
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -184,6 +195,7 @@ export function TicketForm({
         clientHints: form.clientHints.split("\n").map((s) => s.trim()).filter(Boolean),
         assignTo,
         studentIds: selectedStudents,
+        groupId: assignTo === "group" ? groupId : undefined,
       }),
     });
     setLoading(false);
@@ -192,7 +204,9 @@ export function TicketForm({
       toast.error(data.error || "Creazione ticket fallita");
       return;
     }
-    toast.success("Ticket assegnato agli studenti");
+    toast.success(
+      assignTo === "group" ? "Ticket assegnato al gruppo" : "Ticket assegnato agli studenti",
+    );
     router.push(`/teacher/classrooms/${classroomId}`);
     router.refresh();
   }
@@ -224,7 +238,9 @@ export function TicketForm({
             <Label>Destinatari</Label>
             <Select
               value={assignTo}
-              onValueChange={(v) => setAssignTo((v as "all" | "selected") || "all")}
+              onValueChange={(v) =>
+                setAssignTo((v as "all" | "selected" | "group") || "all")
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -232,9 +248,33 @@ export function TicketForm({
               <SelectContent>
                 <SelectItem value="all">Tutta la classe</SelectItem>
                 <SelectItem value="selected">Studenti selezionati</SelectItem>
+                <SelectItem value="group">Gruppo di lavoro</SelectItem>
               </SelectContent>
             </Select>
           </div>
+          {assignTo === "group" && (
+            <div className="md:col-span-2 space-y-2">
+              <Label>Gruppo</Label>
+              {groups.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nessun gruppo in questa classe. Creane uno dalla pagina classe.
+                </p>
+              ) : (
+                <Select value={groupId} onValueChange={(v) => setGroupId(v ?? "")}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleziona gruppo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {groups.map((g) => (
+                      <SelectItem key={g.id} value={g.id}>
+                        {g.name} ({g.memberIds.length} membri)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          )}
           {assignTo === "selected" && (
             <div className="md:col-span-2 space-y-2">
               <Label>Studenti</Label>

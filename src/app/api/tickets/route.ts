@@ -25,8 +25,9 @@ const createSchema = z.object({
     .default([]),
   secretNotes: z.string().min(5),
   clientHints: z.array(z.string()).default([]),
-  assignTo: z.enum(["all", "selected"]).default("all"),
+  assignTo: z.enum(["all", "selected", "group"]).default("all"),
   studentIds: z.array(z.string()).optional(),
+  groupId: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -52,13 +53,26 @@ export async function POST(req: Request) {
     return jsonError("Classe non trovata", 404);
   }
 
+  const validStudentIds = new Set(
+    classroom.memberships.filter((m) => m.user.role === "STUDENT").map((m) => m.userId),
+  );
+
   let assigneeIds: string[] = [];
   if (data.assignTo === "all") {
-    assigneeIds = classroom.memberships
-      .filter((m) => m.user.role === "STUDENT")
-      .map((m) => m.userId);
+    assigneeIds = [...validStudentIds];
+  } else if (data.assignTo === "group") {
+    if (!data.groupId) return jsonError("Seleziona un gruppo");
+    const group = await prisma.studentGroup.findFirst({
+      where: { id: data.groupId, classroomId: classroom.id },
+      include: { members: true },
+    });
+    if (!group) return jsonError("Gruppo non trovato", 404);
+    assigneeIds = group.members.map((m) => m.userId);
   } else {
-    assigneeIds = data.studentIds || [];
+    assigneeIds = [...new Set(data.studentIds || [])];
+    if (assigneeIds.some((id) => !validStudentIds.has(id))) {
+      return jsonError("Uno o più studenti non appartengono alla classe");
+    }
   }
 
   if (!assigneeIds.length) {
