@@ -7,6 +7,10 @@ import { z } from "zod";
 import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+if (!process.env.AUTH_SECRET) {
+  process.env.AUTH_SECRET = "helpdesk-lab-sample-secret";
+}
+
 const classLoginSchema = z.object({
   mode: z.literal("class"),
   classCode: z.string().min(3),
