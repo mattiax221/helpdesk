@@ -686,4 +686,283 @@ export const TICKET_SCENARIOS: GeneratedTicket[] = [
       "La NIC è stata ripristinata ieri.",
     ],
   },
+  // --- Virtualizzazione ---
+  {
+    title: "VM Hyper-V non parte dopo aggiornamento host",
+    description:
+      "Dopo Windows Update sul server lab, la VM 'SRV-WEB01' resta in Failed. Gli studenti non possono fare esercitazione IIS.",
+    category: "SISTEMI_OPERATIVI",
+    priority: "CRITICA",
+    difficulty: "AVANZATO",
+    slaMinutes: 35,
+    fakeLogs: [
+      {
+        name: "hyperv-event.txt",
+        content:
+          "Event ID 19100 Hyper-V-VMMS\nFailed to start worker process\nVirtualization extensions: Disabled in BIOS after firmware flash\nCheckpoint: Production (incompatible after update)",
+      },
+    ],
+    secretNotes:
+      "Causa: virtualizzazione CPU disabilitata post-firmware e/o checkpoint corrotto. Fix: VT-x/AMD-V in BIOS, Secure Boot policy, rimuovere checkpoint incompatibile, ripristinare VMMS.",
+    clientHints: [
+      "Ieri il tecnico ha aggiornato il BIOS dell'host.",
+      "Le VM generation 2 falliscono tutte, Gen1 a volte sì.",
+      "Task Manager non mostra CPU virtualization.",
+    ],
+  },
+  {
+    title: "VMware Tools mancanti: mouse e rete a scatti",
+    description:
+      "Nella VM Ubuntu del laboratorio CAD il mouse esce dallo schermo e la rete è lentissima. Dicevano 'funzionava ieri'.",
+    category: "SISTEMI_OPERATIVI",
+    priority: "MEDIA",
+    difficulty: "INTERMEDIO",
+    slaMinutes: 40,
+    fakeLogs: [
+      {
+        name: "guest-info.txt",
+        content:
+          "Guest OS: Ubuntu 22.04\nVMware Tools: NOT INSTALLED\nvmxnet3: link up, driver generic e1000 fallback\nDisplay: VESA only",
+      },
+    ],
+    secretNotes:
+      "Causa: VMware Tools / open-vm-tools assenti dopo reinstall. Fix: installare open-vm-tools, driver vmxnet3, riavviare guest, snapshot pulito.",
+    clientHints: [
+      "Hanno reinstallato Ubuntu tenendo solo il disco dati.",
+      "Con schermo intero il cursore scompare.",
+      "Ping all'host ha RTT alti.",
+    ],
+  },
+  {
+    title: "Snapshot VM pieno: datastore allo 0%",
+    description:
+      "Il datastore 'LAB-SSD' è pieno, nessuna nuova VM si avvia. Un docente ha fatto 'tanti snapshot per sicurezza'.",
+    category: "SISTEMI_OPERATIVI",
+    priority: "ALTA",
+    difficulty: "INTERMEDIO",
+    slaMinutes: 30,
+    fakeLogs: [
+      {
+        name: "datastore.txt",
+        content:
+          "Datastore LAB-SSD: 480 GB\nFree: 120 MB\nVM CAD-PC03: 14 snapshots chain\nDelta disks: 210 GB",
+      },
+    ],
+    secretNotes:
+      "Causa: catena snapshot eccessiva. Fix: consolidare/delete snapshot a freddo, Storage vMotion se disponibile, policy max snapshot, allarme free space.",
+    clientHints: [
+      "Ogni prova esame crea uno snapshot.",
+      "Il delete snapshot resta al 95% da ore.",
+      "Altri datastore hanno spazio.",
+    ],
+  },
+  // --- Active Directory ---
+  {
+    title: "Login AD: trust relationship failed",
+    description:
+      "Un PC di aula non fa più logon di dominio: 'The trust relationship between this workstation and the primary domain failed'.",
+    category: "SISTEMI_OPERATIVI",
+    priority: "ALTA",
+    difficulty: "INTERMEDIO",
+    slaMinutes: 35,
+    fakeLogs: [
+      {
+        name: "nltest.txt",
+        content:
+          "nltest /sc_query:SCUOLA.LOCAL\nI_NetLogonControl failed: Status = 5 0x5 ERROR_ACCESS_DENIED\nSecure channel: broken\nMachine password last set: 95 days ago",
+      },
+    ],
+    secretNotes:
+      "Causa: secure channel rotto / password computer account. Fix: Test-ComputerSecureChannel, Reset-ComputerMachinePassword, o unjoin/rejoin dominio con account privilegiato.",
+    clientHints: [
+      "Il PC è rimasto spento per le vacanze.",
+      "Con account locale si entra.",
+      "Gli altri PC della stessa OU funzionano.",
+    ],
+  },
+  {
+    title: "GPO non si applica: mappa unità Z: assente",
+    description:
+      "Agli studenti manca l'unità di rete Z: Documenti. Dicevano che la GPO 'Map-Z' è attiva.",
+    category: "SISTEMI_OPERATIVI",
+    priority: "MEDIA",
+    difficulty: "AVANZATO",
+    slaMinutes: 45,
+    fakeLogs: [
+      {
+        name: "gpresult.txt",
+        content:
+          "gpresult /r\nApplied GPOs: Default Domain Policy\nMap-Z-Drive: NOT APPLIED (Filter: Security Filtering)\nOU: OU=Docenti,DC=scuola,DC=local\nUser: STUDENTE01 in OU=Studenti",
+      },
+    ],
+    secretNotes:
+      "Causa: GPO linkata su OU sbagliata / security filtering / Item-level targeting. Fix: spostare link su OU Studenti, autenticazione utente, gpupdate /force, Event Viewer GroupPolicy.",
+    clientHints: [
+      "I docenti vedono Z:, gli studenti no.",
+      "Hanno spostato gli account in una nuova OU ieri.",
+      "gpupdate dice successo ma niente unità.",
+    ],
+  },
+  {
+    title: "DNS AD: SRV record _ldap mancanti",
+    description:
+      "Nuovi PC non trovano il dominio in join. nslookup -type=SRV _ldap._tcp.scuola.local fallisce.",
+    category: "RETI_DNS",
+    priority: "CRITICA",
+    difficulty: "AVANZATO",
+    slaMinutes: 40,
+    fakeLogs: [
+      {
+        name: "dcdiag-dns.txt",
+        content:
+          "dcdiag /test:dns\nWarning: Missing SRV record _ldap._tcp.dc._msdcs.scuola.local\nDNS server on DC: scavenging deleted records\nReplication: last success 3 days ago",
+      },
+    ],
+    secretNotes:
+      "Causa: zone DNS/_msdcs corrotte o scavenging aggressivo + replica DC ferma. Fix: net stop/start netlogon, ripristinare SRV, controllare replica AD, TTL scavenging.",
+    clientHints: [
+      "Il secondo DC è spento da mercoledì.",
+      "Join fallisce su 'domain controller could not be found'.",
+      "Ping a scuola.local a volte non risolve.",
+    ],
+  },
+  {
+    title: "Account AD locked-out in massa",
+    description:
+      "Mezza classe non entra: account locked. Sembra un servizio che ritenta password vecchie.",
+    category: "SICUREZZA",
+    priority: "ALTA",
+    difficulty: "INTERMEDIO",
+    slaMinutes: 30,
+    fakeLogs: [
+      {
+        name: "lockout-events.txt",
+        content:
+          "Event 4740 Account Lockout\nCaller Computer Name: PRINT-SRV01\nSource: Wi-Fi controller captive / old EAP profile\nBadPwdCount: 12",
+      },
+    ],
+    secretNotes:
+      "Causa: device/servizio con credenziali stale (stampante/Wi‑Fi). Fix: sbloccare account, rimuovere profilo Wi‑Fi vecchio, aggiornare service account, LockoutPolicy.",
+    clientHints: [
+      "Succede soprattutto al mattino.",
+      "Chi usa cavo LAN entra dopo unlock.",
+      "La stampante di rete chiede login da mesi.",
+    ],
+  },
+  // --- Linux ---
+  {
+    title: "Linux: permission denied su /var/www",
+    description:
+      "Il sito del progetto classe su Ubuntu Server dà 403. Apache gira ma non legge i file caricati via SFTP.",
+    category: "SISTEMI_OPERATIVI",
+    priority: "ALTA",
+    difficulty: "INTERMEDIO",
+    slaMinutes: 35,
+    fakeLogs: [
+      {
+        name: "apache-error.log",
+        content:
+          "[error] (13)Permission denied: access to /index.html denied\nls -la /var/www/html → owner studente:studenti mode 700\nwww-data cannot traverse",
+      },
+    ],
+    secretNotes:
+      "Causa: ownership/permessi e/o ACL. Fix: chown/chmod corretti (755 dirs, 644 files), gruppo www-data, setgid, SELinux/AppArmor se attivo.",
+    clientHints: [
+      "Hanno uploadato come utente 'studente'.",
+      "Da browser file:// sul server si apre.",
+      "sudo -u www-data cat index.html fallisce.",
+    ],
+  },
+  {
+    title: "apt update fallisce: NO_PUBKEY",
+    description:
+      "Sui PC Linux del lab `apt update` esplode con NO_PUBKEY e mirror irraggiungibile. Non installano pacchetti per la lezione.",
+    category: "SISTEMI_OPERATIVI",
+    priority: "MEDIA",
+    difficulty: "BASE",
+    slaMinutes: 40,
+    fakeLogs: [
+      {
+        name: "apt-update.txt",
+        content:
+          "W: GPG error: http://archive.ubuntu.com ... NO_PUBKEY 3B4FE6ACC0B21F32\nE: The repository is not signed\nProxy: HTTP_PROXY=http://proxy.scuola.local:3128 (stale)",
+      },
+    ],
+    secretNotes:
+      "Causa: chiave GPG repo + proxy/APT conf obsoleta. Fix: apt-key/signed-by modern, aggiornare sources, proxy corretto, clock NTP.",
+    clientHints: [
+      "L'orologio di alcuni PC è indietro di due giorni.",
+      "Senza proxy da rete docenti funziona.",
+      "Hanno copiato sources.list da Ubuntu 20 su 22.04.",
+    ],
+  },
+  {
+    title: "SSH root login rifiutato dopo hardening",
+    description:
+      "Il tecnico non entra più sul server Linux: Connection refused / Permission denied (publickey). Dice che 'aveva messo le chiavi'.",
+    category: "SICUREZZA",
+    priority: "ALTA",
+    difficulty: "AVANZATO",
+    slaMinutes: 45,
+    fakeLogs: [
+      {
+        name: "sshd_config.txt",
+        content:
+          "PermitRootLogin no\nPasswordAuthentication no\nAllowUsers adminlab\nAuthorizedKeysFile .ssh/authorized_keys\nPort 2222\nListenAddress 10.20.30.5",
+      },
+    ],
+    secretNotes:
+      "Causa: hardening (no root, porta 2222, AllowUsers). Fix: usare adminlab@host -p 2222, chiave corretta, console/IPMI se lockout, non riaprire root senza necessità.",
+    clientHints: [
+      "Prova ancora su porta 22.",
+      "La chiave è sull'altro PC del laboratorio.",
+      "Da console fisica il server è su.",
+    ],
+  },
+  {
+    title: "systemd service nginx failed after reboot",
+    description:
+      "Dopo riavvio del server web, nginx.service è failed. Il sito scuola è offline.",
+    category: "SISTEMI_OPERATIVI",
+    priority: "CRITICA",
+    difficulty: "INTERMEDIO",
+    slaMinutes: 25,
+    fakeLogs: [
+      {
+        name: "systemctl-nginx.txt",
+        content:
+          "nginx.service: Failed with result 'exit-code'\nnginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)\napache2.service: active (forgotten leftover)",
+      },
+    ],
+    secretNotes:
+      "Causa: porta 80 occupata da apache2 residuo. Fix: stop/disable apache2 o cambiare listen, nginx -t, systemctl enable nginx, verificare socket.",
+    clientHints: [
+      "Avevano testato Apache e Nginx insieme.",
+      "ss -tlnp | grep :80 mostra apache2.",
+      "Prima del reboot andava.",
+    ],
+  },
+  {
+    title: "LVM pieno: filesystem root al 100%",
+    description:
+      "Login Linux lentissimo, 'No space left on device'. Docker e log hanno riempito root.",
+    category: "SISTEMI_OPERATIVI",
+    priority: "CRITICA",
+    difficulty: "AVANZATO",
+    slaMinutes: 35,
+    fakeLogs: [
+      {
+        name: "df-lvs.txt",
+        content:
+          "Filesystem /dev/mapper/ubuntu--vg-root 98G 98G 0 100%\n/var/lib/docker 61G\n/var/log/journal 12G\nFree PE in VG: 40G unused",
+      },
+    ],
+    secretNotes:
+      "Causa: root LV pieno con extent liberi nel VG. Fix: docker system prune, vacuum journal, lvextend + resize2fs/xfs_growfs, logrotate.",
+    clientHints: [
+      "Hanno buildato immagini Docker tutta la settimana.",
+      "C'è spazio nel volume group ma non montato.",
+      "Apt non riesce a scrivere in /var/cache.",
+    ],
+  },
 ];

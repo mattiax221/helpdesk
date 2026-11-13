@@ -10,6 +10,9 @@ import { CATEGORY_LABELS, PRIORITY_LABELS, STATUS_LABELS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { AddStudentForm } from "@/components/teacher/add-student-form";
 import { GroupsPanel } from "@/components/teacher/groups-panel";
+import { ClassroomStatsPanel } from "@/components/teacher/classroom-stats";
+import { LabLeaderboard } from "@/components/teacher/lab-leaderboard";
+import { computeClassroomStats } from "@/lib/classroom-stats";
 
 export default async function ClassroomDetailPage({
   params,
@@ -49,7 +52,7 @@ export default async function ClassroomDetailPage({
         include: {
           assignments: {
             include: {
-              assignee: { select: { name: true } },
+              assignee: { select: { id: true, name: true } },
               evaluation: true,
             },
           },
@@ -62,6 +65,55 @@ export default async function ClassroomDetailPage({
   if (!classroom || classroom.ownerId !== session.user.id) notFound();
 
   const students = classroom.memberships.filter((m) => m.user.role === "STUDENT");
+  const studentIds = students.map((m) => m.user.id);
+  const allAssignments = classroom.tickets.flatMap((t) => t.assignments);
+
+  const gameScores = studentIds.length
+    ? await prisma.gameScore.findMany({
+        where: { userId: { in: studentIds } },
+        select: { userId: true, gameKey: true, score: true, xpEarned: true },
+      })
+    : [];
+
+  const stats = computeClassroomStats(
+    classroom.memberships,
+    allAssignments.map((a) => ({
+      assigneeId: a.assigneeId,
+      status: a.status,
+      evaluation: a.evaluation,
+    })),
+    gameScores,
+  );
+
+  const labRows = stats.students
+    .map((s) => {
+      const scores = gameScores.filter((g) => g.userId === s.userId);
+      return {
+        userId: s.userId,
+        name: s.name,
+        labXp: scores.reduce((sum, g) => sum + g.xpEarned, 0),
+        bestScore: scores.reduce((max, g) => Math.max(max, g.score), 0),
+        plays: scores.length,
+      };
+    })
+    .filter((r) => r.plays > 0)
+    .sort((a, b) => b.labXp - a.labXp || b.bestScore - a.bestScore);
+
+  const gameKeys = ["rj45", "terminal", "ports", "subnet"] as const;
+  const byGame = gameKeys.map((gameKey) => {
+    const bestByUser = new Map<string, number>();
+    for (const g of gameScores.filter((x) => x.gameKey === gameKey)) {
+      bestByUser.set(g.userId, Math.max(bestByUser.get(g.userId) || 0, g.score));
+    }
+    const top = [...bestByUser.entries()]
+      .map(([userId, score]) => ({
+        name: students.find((s) => s.user.id === userId)?.user.name || "Studente",
+        score,
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+    return { gameKey, top };
+  });
 
   return (
     <AppShell role="TEACHER" userName={session.user.name || "Docente"}>
@@ -77,6 +129,14 @@ export default async function ClassroomDetailPage({
         >
           Assegna ticket
         </Link>
+      </div>
+
+      <div className="mb-8">
+        <ClassroomStatsPanel stats={stats} title="XP, voti e ticket per studente" />
+      </div>
+
+      <div className="mb-8">
+        <LabLeaderboard rows={labRows} byGame={byGame} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -134,7 +194,10 @@ export default async function ClassroomDetailPage({
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 {ticket.assignments.map((a) => (
-                  <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 border-t py-2">
+                  <div
+                    key={a.id}
+                    className="flex flex-wrap items-center justify-between gap-2 border-t py-2"
+                  >
                     <span>{a.assignee.name}</span>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">{STATUS_LABELS[a.status]}</Badge>
@@ -156,4 +219,3 @@ export default async function ClassroomDetailPage({
     </AppShell>
   );
 }
-

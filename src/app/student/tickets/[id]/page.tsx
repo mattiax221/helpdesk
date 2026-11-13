@@ -48,6 +48,7 @@ export default async function StudentTicketPage({
       priority: assignment.ticket.priority,
       slaMinutes: assignment.ticket.slaMinutes,
       fakeLogs: assignment.ticket.fakeLogs,
+      attachmentsMeta: assignment.ticket.attachmentsMeta,
     },
   };
 

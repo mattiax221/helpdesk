@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Rj45Game } from "@/components/labs/rj45-game";
 import { TerminalGame } from "@/components/labs/terminal-game";
 import { PortsGame } from "@/components/labs/ports-game";
+import { SubnetGame } from "@/components/labs/subnet-game";
+import { LocalizedHeading } from "@/components/localized-heading";
 
 export default async function LabPage() {
   const session = await requireSession();
@@ -14,18 +16,14 @@ export default async function LabPage() {
 
   return (
     <AppShell role={role} userName={session.user.name || "Utente"} xp={user?.xp ?? 0}>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Lab & Mini-Games</h1>
-        <p className="text-sm text-muted-foreground">
-          Crimpatura RJ45, troubleshooting da terminale e Port Strike sulle porte di rete.
-        </p>
-      </div>
+      <LocalizedHeading titleKey="lab_title" subtitleKey="lab_subtitle" />
 
       <Tabs defaultValue="rj45">
         <TabsList className="flex h-auto flex-wrap gap-1">
           <TabsTrigger value="rj45">Crimpatura RJ45</TabsTrigger>
           <TabsTrigger value="terminal">Ping & IP</TabsTrigger>
           <TabsTrigger value="ports">Port Strike</TabsTrigger>
+          <TabsTrigger value="subnet">Subnet / CIDR</TabsTrigger>
         </TabsList>
         <TabsContent value="rj45" className="pt-4">
           <Card>
@@ -63,6 +61,19 @@ export default async function LabPage() {
             </CardHeader>
             <CardContent>
               <PortsGame />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="subnet" className="pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Subnet Builder</CardTitle>
+              <CardDescription>
+                Calcola host utilizzabili, indirizzo di rete, broadcast e maschera da un CIDR.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SubnetGame />
             </CardContent>
           </Card>
         </TabsContent>

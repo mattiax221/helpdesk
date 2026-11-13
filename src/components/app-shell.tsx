@@ -14,8 +14,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LocaleToggle } from "@/components/locale-toggle";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useLocale } from "@/lib/i18n";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
 
@@ -31,14 +33,16 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { t } = useLocale();
   const teacherNav: NavItem[] = [
-    { href: "/teacher", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/teacher/tickets/new", label: "Nuovo ticket", icon: Ticket },
-    { href: "/teacher/review", label: "Revisioni", icon: ClipboardCheck },
+    { href: "/teacher", label: t("nav_dashboard"), icon: LayoutDashboard },
+    { href: "/teacher/tickets/new", label: t("nav_new_ticket"), icon: Ticket },
+    { href: "/teacher/review", label: t("nav_review"), icon: ClipboardCheck },
+    { href: "/lab", label: t("nav_lab"), icon: Gamepad2 },
   ];
   const studentNav: NavItem[] = [
-    { href: "/student", label: "Board", icon: LayoutDashboard },
-    { href: "/lab", label: "Lab & Mini-Games", icon: Gamepad2 },
+    { href: "/student", label: t("nav_board"), icon: LayoutDashboard },
+    { href: "/lab", label: t("nav_lab"), icon: Gamepad2 },
   ];
   const nav = role === "TEACHER" ? teacherNav : studentNav;
   const initials = userName
@@ -56,7 +60,7 @@ export function AppShell({
             <span className="flex size-8 items-center justify-center rounded-md bg-teal-700 text-white shadow-sm">
               <Headphones className="size-4" />
             </span>
-            <span className="hidden sm:inline">HelpDesk Lab</span>
+            <span className="hidden sm:inline">{t("brand")}</span>
           </Link>
           <nav className="ml-2 hidden items-center gap-1 md:flex">
             {nav.map((item) => {
@@ -85,6 +89,7 @@ export function AppShell({
                 {xp} XP
               </span>
             )}
+            <LocaleToggle />
             <ThemeToggle />
             <div className="flex items-center gap-2 rounded-md border px-2 py-1">
               <Avatar className="size-6">

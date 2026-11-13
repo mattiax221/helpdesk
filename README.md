@@ -60,15 +60,25 @@ L’accesso con Codice Classe richiede che lo studente sia già nel roster della
 1. Accede e crea una o più **Classi** (codice univoco tipo `IT-9482`).
 2. Opzionale: pulsante **Collega Google Classroom** (OAuth predisposto).
 3. Crea ticket **manuali** o con **Generatore AI**, con note segrete (soluzione attesa).
-4. Assegna a tutta la classe o a singoli studenti.
-5. In **Revisioni** valuta diagnosi (voto 1–10 + XP + feedback).
+4. Assegna a tutta la classe, a singoli studenti o a **gruppi**.
+5. Nella classe vedi **statistiche** (XP medi, ticket chiusi, voti) e **classifica Lab**.
+6. In **Revisioni** valuta diagnosi (voto 1–10 + XP + feedback).
 
 ### Studente
 
 1. Entra con Codice Classe + Nome/Cognome.
-2. Usa la **Kanban board** (`Da Fare` → `In Lavorazione` → `In Attesa di Verifica` → `Risolti`).
-3. Nel dettaglio ticket: descrizione cliente, log fittizi, chat indizi, campi di chiusura obbligatori.
-4. Sezione **Lab & Mini-Games**: crimpatura RJ45 (T568A/B) e sfide terminale IP/comandi.
+2. Usa la **Kanban board** con filtri priorità/SLA e alert scadenza.
+3. Nel dettaglio ticket: descrizione cliente, allegati/log/screenshot, chat indizi, campi di chiusura obbligatori.
+4. Sezione **Lab & Mini-Games**: RJ45 (T568A/B/Crossover), terminale IP, Port Strike, Subnet/CIDR.
+5. Toggle lingua **IT/EN** nell’header per laboratori bilingue.
+
+### Smoke test
+
+Con il server avviato:
+
+```bash
+npm run smoke
+```
 
 ## Migrazione a PostgreSQL / Supabase
 

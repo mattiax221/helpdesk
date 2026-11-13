@@ -192,6 +192,13 @@ export function TicketForm({
         fakeLogs: logs.length
           ? logs
           : [{ name: "note.txt", content: form.fakeLogs }],
+        attachmentsMeta: [
+          ...(logs.length
+            ? logs
+            : [{ name: "note.txt", content: form.fakeLogs }]
+          ).map((l) => ({ name: l.name, type: "text/plain" })),
+          { name: "screenshot-cliente.png", type: "image/png" },
+        ],
         clientHints: form.clientHints.split("\n").map((s) => s.trim()).filter(Boolean),
         assignTo,
         studentIds: selectedStudents,

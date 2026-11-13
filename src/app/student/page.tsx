@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
 import { KanbanBoard } from "@/components/kanban/board";
+import { LocalizedHeading } from "@/components/localized-heading";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default async function StudentBoardPage() {
@@ -30,12 +31,7 @@ export default async function StudentBoardPage() {
 
   return (
     <AppShell role="STUDENT" userName={session.user.name || "Studente"} xp={user?.xp ?? 0}>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Help Desk Board</h1>
-        <p className="text-sm text-muted-foreground">
-          Trascina i ticket tra le colonne. Apri il dettaglio per diagnosi, log e chat col cliente.
-        </p>
-      </div>
+      <LocalizedHeading titleKey="board_title" subtitleKey="board_subtitle" />
       {items.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-sm text-muted-foreground">

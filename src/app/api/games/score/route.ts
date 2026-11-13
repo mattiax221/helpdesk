@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireApiUser, jsonError } from "@/lib/api";
 
 const schema = z.object({
-  gameKey: z.enum(["rj45", "terminal", "ports"]),
+  gameKey: z.enum(["rj45", "terminal", "ports", "subnet"]),
   score: z.number().int().min(0).max(1000),
   meta: z.record(z.string(), z.unknown()).optional(),
 });
@@ -13,6 +13,7 @@ const XP_BY_GAME = {
   rj45: 15,
   terminal: 15,
   ports: 15,
+  subnet: 15,
 } as const;
 
 const DAILY_XP_CAP = 60;

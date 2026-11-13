@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SlaTimer } from "@/components/ticket/sla-timer";
+import { AttachmentsPanel } from "@/components/ticket/attachments-panel";
 import {
   CATEGORY_LABELS,
   PRIORITY_COLORS,
@@ -42,6 +43,7 @@ type Detail = {
     priority: TicketPriority;
     slaMinutes: number;
     fakeLogs: string;
+    attachmentsMeta?: string;
   };
 };
 
@@ -67,6 +69,17 @@ export function TicketDetail({ assignment }: { assignment: Detail }) {
       return [];
     }
   }, [assignment.ticket.fakeLogs]);
+
+  const attachmentsMeta = useMemo(() => {
+    try {
+      return JSON.parse(assignment.ticket.attachmentsMeta || "[]") as {
+        name: string;
+        type?: string;
+      }[];
+    } catch {
+      return [];
+    }
+  }, [assignment.ticket.attachmentsMeta]);
 
   async function save(patch: Record<string, unknown>, successMsg?: string) {
     setSaving(true);
@@ -141,23 +154,9 @@ export function TicketDetail({ assignment }: { assignment: Detail }) {
 
         <div className="rounded-lg border bg-background/80 p-4">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Log / terminale allegati
+            Allegati, log e screenshot
           </h2>
-          <div className="space-y-3">
-            {logs.length === 0 && (
-              <p className="text-sm text-muted-foreground">Nessun allegato tecnico.</p>
-            )}
-            {logs.map((log) => (
-              <div key={log.name} className="overflow-hidden rounded-md border">
-                <div className="border-b bg-slate-100 px-3 py-1.5 font-mono text-xs dark:bg-slate-900">
-                  {log.name}
-                </div>
-                <pre className="overflow-x-auto bg-slate-950 p-3 font-mono text-[11px] leading-relaxed text-emerald-300">
-                  {log.content}
-                </pre>
-              </div>
-            ))}
-          </div>
+          <AttachmentsPanel logs={logs} attachmentsMeta={attachmentsMeta} />
         </div>
 
         <div className="rounded-lg border bg-background/80 p-4">
