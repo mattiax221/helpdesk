@@ -18,16 +18,26 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
     e.preventDefault();
     setLoading(true);
     const fd = new FormData(e.currentTarget);
+    const classCode = String(fd.get("classCode") || "").trim();
+    const firstName = String(fd.get("firstName") || "").trim();
+    const lastName = String(fd.get("lastName") || "").trim();
+    if (!classCode || !firstName || !lastName) {
+      setLoading(false);
+      toast.error("Compila codice, nome e cognome");
+      return;
+    }
     const res = await signIn("credentials", {
       redirect: false,
       mode: "class",
-      classCode: String(fd.get("classCode") || ""),
-      firstName: String(fd.get("firstName") || ""),
-      lastName: String(fd.get("lastName") || ""),
+      classCode,
+      firstName,
+      lastName,
     });
     setLoading(false);
     if (res?.error) {
-      toast.error("Codice classe non valido o dati incompleti");
+      toast.error(
+        "Accesso negato: controlla il codice (es. IT-9482) e che nome/cognome siano nel roster della classe",
+      );
       return;
     }
     router.push("/student");
@@ -88,8 +98,9 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
               </Button>
             </form>
             <p className="text-xs text-muted-foreground">
-              Serve essere già nel roster della classe. Demo seed: codice{" "}
-              <strong>IT-9482</strong>, studente es. Marco Rossi.
+              Devi essere nel roster (il docente ti aggiunge). Demo: codice{" "}
+              <strong>IT-9482</strong> · studente <strong>Marco Rossi</strong>{" "}
+              (maiuscole/minuscole indifferenti).
             </p>
           </TabsContent>
           <TabsContent value="email" className="space-y-4 pt-4">

@@ -98,23 +98,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
         if (!parsed.success) return null;
 
-        const code = parsed.data.classCode.trim().toUpperCase();
+        const code = parsed.data.classCode
+          .trim()
+          .toUpperCase()
+          .replace(/[\u2013\u2014]/g, "-")
+          .replace(/\s+/g, "");
         const classroom = await prisma.classroom.findUnique({ where: { code } });
         if (!classroom) return null;
 
         const firstName = parsed.data.firstName.trim();
         const lastName = parsed.data.lastName.trim();
         const displayName = `${firstName} ${lastName}`;
+        const firstKey = firstName.toLocaleLowerCase("it");
+        const lastKey = lastName.toLocaleLowerCase("it");
 
-        // Only existing roster members can join — no open self-registration.
-        const user = await prisma.user.findFirst({
-          where: {
-            role: "STUDENT",
-            firstName: { equals: firstName },
-            lastName: { equals: lastName },
-            memberships: { some: { classroomId: classroom.id } },
-          },
+        // Roster-only join; match names case-insensitively (SQLite equals is case-sensitive).
+        const members = await prisma.classroomMembership.findMany({
+          where: { classroomId: classroom.id, user: { role: "STUDENT" } },
+          include: { user: true },
         });
+        const user =
+          members.find((m) => {
+            const f = (m.user.firstName || "").toLocaleLowerCase("it");
+            const l = (m.user.lastName || "").toLocaleLowerCase("it");
+            const full = (m.user.name || "").toLocaleLowerCase("it");
+            return (
+              (f === firstKey && l === lastKey) ||
+              full === `${firstKey} ${lastKey}`
+            );
+          })?.user ?? null;
         if (!user) return null;
 
         return {
