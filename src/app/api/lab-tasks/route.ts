@@ -10,7 +10,8 @@ const createSchema = z.object({
   title: z.string().min(3).optional(),
   instructions: z.string().optional(),
   minScore: z.number().int().min(10).max(100).optional(),
-  dueAt: z.string().datetime().optional().nullable(),
+  // ISO o datetime-local ("2026-11-13T22:00")
+  dueAt: z.string().min(1).optional().nullable(),
   assignTo: z.enum(["all", "selected", "group"]).default("all"),
   studentIds: z.array(z.string()).optional(),
   groupId: z.string().optional(),

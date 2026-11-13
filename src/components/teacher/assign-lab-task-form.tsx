@@ -24,6 +24,7 @@ export function AssignLabTaskForm({
   const [title, setTitle] = useState("");
   const [instructions, setInstructions] = useState("");
   const [minScore, setMinScore] = useState(LAB_GAMES[0].defaultMinScore);
+  const [dueAt, setDueAt] = useState("");
   const [assignTo, setAssignTo] = useState<"all" | "selected" | "group">("all");
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [groupId, setGroupId] = useState(groups[0]?.id || "");
@@ -49,6 +50,7 @@ export function AssignLabTaskForm({
         title: title || undefined,
         instructions: instructions || undefined,
         minScore,
+        dueAt: dueAt ? new Date(dueAt).toISOString() : null,
         assignTo,
         studentIds: selectedStudents,
         groupId: assignTo === "group" ? groupId : undefined,
@@ -63,6 +65,7 @@ export function AssignLabTaskForm({
     toast.success("Compito Lab assegnato");
     setTitle("");
     setInstructions("");
+    setDueAt("");
     router.refresh();
   }
 
@@ -115,16 +118,30 @@ export function AssignLabTaskForm({
               placeholder="Cosa devono fare gli studenti e quando consegnare"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="lab-min">Punteggio minimo per consegnare</Label>
-            <Input
-              id="lab-min"
-              type="number"
-              min={10}
-              max={100}
-              value={minScore}
-              onChange={(e) => setMinScore(Number(e.target.value) || 50)}
-            />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="lab-min">Punteggio minimo per consegnare</Label>
+              <Input
+                id="lab-min"
+                type="number"
+                min={10}
+                max={100}
+                value={minScore}
+                onChange={(e) => setMinScore(Number(e.target.value) || 50)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lab-due">Scadenza</Label>
+              <Input
+                id="lab-due"
+                type="datetime-local"
+                value={dueAt}
+                onChange={(e) => setDueAt(e.target.value)}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Se uno studente non completa in tempo, ricevi un avviso (in-app + email Workspace).
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2">

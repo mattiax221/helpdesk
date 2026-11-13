@@ -58,6 +58,11 @@ model User {
   passwordHash  String?
   role          Role      @default(STUDENT)
   xp            Int       @default(0)
+  /// Preferenze avvisi scadenze (docente)
+  notifyOverdueEmail    Boolean   @default(true)
+  notifyTicketSlaEmail  Boolean   @default(true)
+  /// Destinatario avvisi; deve essere nel dominio scuola (es. @casadicarita.it)
+  notifyEmail           String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -73,6 +78,34 @@ model User {
   gameScores            GameScore[]
   createdLabTasks       LabTask[]             @relation("LabTaskCreator")
   labSubmissions        LabTaskSubmission[]
+  notifications         Notification[]
+}
+
+enum NotificationEmailStatus {
+  PENDING
+  SENT
+  SKIPPED
+  FAILED
+}
+
+/// Avvisi docente (scadenze Lab / SLA ticket). L'email esce via Gmail Workspace del docente.
+model Notification {
+  id          String                   @id @default(cuid())
+  userId      String
+  type        String
+  title       String
+  body        String
+  meta        String                   @default("{}")
+  dedupeKey   String                   @unique
+  readAt      DateTime?
+  emailStatus NotificationEmailStatus  @default(PENDING)
+  emailError  String?
+  createdAt   DateTime                 @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
 }
 
 model Account {

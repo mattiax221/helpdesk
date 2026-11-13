@@ -12,6 +12,7 @@ import {
   LogOut,
   ClipboardCheck,
   ListTodo,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -19,6 +20,7 @@ import { LocaleToggle } from "@/components/locale-toggle";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useLocale } from "@/lib/i18n";
+import { NotificationBell } from "@/components/teacher/notification-bell";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
 
@@ -39,6 +41,7 @@ export function AppShell({
     { href: "/teacher", label: t("nav_dashboard"), icon: LayoutDashboard },
     { href: "/teacher/tickets/new", label: t("nav_new_ticket"), icon: Ticket },
     { href: "/teacher/review", label: t("nav_review"), icon: ClipboardCheck },
+    { href: "/teacher/notifications", label: t("nav_notifications"), icon: Bell },
     { href: "/lab", label: t("nav_lab"), icon: Gamepad2 },
     { href: "/roadmap", label: t("nav_roadmap"), icon: ListTodo },
   ];
@@ -92,6 +95,7 @@ export function AppShell({
                 {xp} XP
               </span>
             )}
+            {role === "TEACHER" && <NotificationBell />}
             <LocaleToggle />
             <ThemeToggle />
             <div className="flex items-center gap-2 rounded-md border px-2 py-1">

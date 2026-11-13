@@ -20,6 +20,7 @@ const DICT = {
     nav_roadmap: "Roadmap",
     nav_new_ticket: "Nuovo ticket",
     nav_review: "Revisioni",
+    nav_notifications: "Notifiche",
     board_title: "Help Desk Board",
     board_subtitle:
       "Trascina i ticket tra le colonne. Apri il dettaglio per diagnosi, log e chat col cliente.",
@@ -37,6 +38,7 @@ const DICT = {
     nav_roadmap: "Roadmap",
     nav_new_ticket: "New ticket",
     nav_review: "Reviews",
+    nav_notifications: "Alerts",
     board_title: "Help Desk Board",
     board_subtitle:
       "Drag tickets across columns. Open a ticket for diagnosis, logs and customer chat.",
