@@ -211,12 +211,21 @@ model Ticket {
   attachmentsMeta String         @default("[]")
   secretNotes     String
   clientHints     String         @default("[]")
+  /// Catena didattica (es. dns-to-ad): un fix debole fa nascere il ticket successivo
+  chainKey        String?
+  chainStep       Int            @default(0)
+  parentTicketId  String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
   classroom   Classroom          @relation(fields: [classroomId], references: [id], onDelete: Cascade)
   createdBy   User               @relation("TicketCreator", fields: [createdById], references: [id], onDelete: Cascade)
   assignments TicketAssignment[]
+  parent      Ticket?            @relation("TicketChain", fields: [parentTicketId], references: [id], onDelete: SetNull)
+  children    Ticket[]           @relation("TicketChain")
+
+  @@index([chainKey, chainStep])
+  @@index([parentTicketId])
 }
 
 model TicketAssignment {

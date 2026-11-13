@@ -11,6 +11,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SlaTimer } from "@/components/ticket/sla-timer";
 import { AttachmentsPanel } from "@/components/ticket/attachments-panel";
 import {
+  IncidentChainBanner,
+  type ChainNode,
+} from "@/components/ticket/incident-chain-banner";
+import {
   CATEGORY_LABELS,
   PRIORITY_COLORS,
   PRIORITY_LABELS,
@@ -44,7 +48,10 @@ type Detail = {
     slaMinutes: number;
     fakeLogs: string;
     attachmentsMeta?: string;
+    chainKey?: string | null;
+    chainStep?: number;
   };
+  chainNodes?: ChainNode[];
 };
 
 export function TicketDetail({ assignment }: { assignment: Detail }) {
@@ -142,10 +149,25 @@ export function TicketDetail({ assignment }: { assignment: Detail }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[1.35fr_0.9fr]">
       <section className="space-y-4">
+        {assignment.ticket.chainKey && (
+          <IncidentChainBanner
+            chainKey={assignment.ticket.chainKey}
+            chainStep={assignment.ticket.chainStep ?? 0}
+            nodes={assignment.chainNodes || []}
+            hrefFor={(node) =>
+              node.assignmentId ? `/student/tickets/${node.assignmentId}` : null
+            }
+          />
+        )}
         <div className="rounded-lg border bg-background/80 p-4">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <h1 className="text-xl font-semibold">{assignment.ticket.title}</h1>
             <Badge variant="secondary">{STATUS_LABELS[status]}</Badge>
+            {assignment.ticket.chainKey && (
+              <Badge variant="outline" className="border-teal-700/40 text-teal-800 dark:text-teal-200">
+                Catena
+              </Badge>
+            )}
           </div>
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
             {assignment.ticket.description}
@@ -188,11 +210,17 @@ export function TicketDetail({ assignment }: { assignment: Detail }) {
                     "max-w-[90%] rounded-md px-3 py-2 text-sm",
                     c.authorType === "STUDENT"
                       ? "ml-auto bg-teal-700 text-white"
-                      : "bg-muted",
+                      : c.authorType === "SYSTEM"
+                        ? "border border-amber-500/30 bg-amber-50 text-amber-950 dark:bg-amber-950/30 dark:text-amber-100"
+                        : "bg-muted",
                   )}
                 >
                   <p className="mb-1 text-[10px] uppercase opacity-70">
-                    {c.authorType === "CLIENT" ? "Cliente" : c.author?.name || c.authorType}
+                    {c.authorType === "CLIENT"
+                      ? "Cliente"
+                      : c.authorType === "SYSTEM"
+                        ? "Sistema"
+                        : c.author?.name || c.authorType}
                   </p>
                   {c.body}
                 </div>

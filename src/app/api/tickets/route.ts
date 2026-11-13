@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiUser, jsonError } from "@/lib/api";
+import { getIncidentChain } from "@/lib/incident-chains";
 
 const createSchema = z.object({
   classroomId: z.string().min(1),
@@ -25,6 +26,7 @@ const createSchema = z.object({
     .default([]),
   secretNotes: z.string().min(5),
   clientHints: z.array(z.string()).default([]),
+  chainKey: z.string().min(1).optional().nullable(),
   assignTo: z.enum(["all", "selected", "group"]).default("all"),
   studentIds: z.array(z.string()).optional(),
   groupId: z.string().optional(),
@@ -79,6 +81,11 @@ export async function POST(req: Request) {
     return jsonError("Nessuno studente da assegnare");
   }
 
+  const chainKey = data.chainKey || null;
+  if (chainKey && !getIncidentChain(chainKey)) {
+    return jsonError("Catena incidente non valida");
+  }
+
   const ticket = await prisma.ticket.create({
     data: {
       classroomId: data.classroomId,
@@ -93,6 +100,8 @@ export async function POST(req: Request) {
       attachmentsMeta: JSON.stringify(data.attachmentsMeta),
       secretNotes: data.secretNotes,
       clientHints: JSON.stringify(data.clientHints),
+      chainKey,
+      chainStep: 0,
       assignments: {
         create: assigneeIds.map((assigneeId) => ({ assigneeId })),
       },

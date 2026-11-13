@@ -15,7 +15,12 @@ export default async function StudentTicketPage({
   const assignment = await prisma.ticketAssignment.findUnique({
     where: { id },
     include: {
-      ticket: true,
+      ticket: {
+        include: {
+          parent: true,
+          children: true,
+        },
+      },
       evaluation: true,
       comments: {
         orderBy: { createdAt: "asc" },
@@ -25,6 +30,40 @@ export default async function StudentTicketPage({
   });
 
   if (!assignment || assignment.assigneeId !== session.user.id) notFound();
+
+  const chainKey = assignment.ticket.chainKey;
+  let chainNodes: {
+    ticketId: string;
+    title: string;
+    chainStep: number;
+    assignmentId?: string | null;
+    current?: boolean;
+  }[] = [];
+
+  if (chainKey) {
+    const rootId = assignment.ticket.parentTicketId || assignment.ticketId;
+    const chainTickets = await prisma.ticket.findMany({
+      where: {
+        chainKey,
+        OR: [{ id: rootId }, { parentTicketId: rootId }],
+      },
+      include: {
+        assignments: {
+          where: { assigneeId: session.user.id },
+          select: { id: true },
+        },
+      },
+      orderBy: { chainStep: "asc" },
+    });
+
+    chainNodes = chainTickets.map((t) => ({
+      ticketId: t.id,
+      title: t.title,
+      chainStep: t.chainStep,
+      assignmentId: t.assignments[0]?.id ?? null,
+      current: t.id === assignment.ticketId,
+    }));
+  }
 
   const safeAssignment = {
     id: assignment.id,
@@ -49,7 +88,10 @@ export default async function StudentTicketPage({
       slaMinutes: assignment.ticket.slaMinutes,
       fakeLogs: assignment.ticket.fakeLogs,
       attachmentsMeta: assignment.ticket.attachmentsMeta,
+      chainKey: assignment.ticket.chainKey,
+      chainStep: assignment.ticket.chainStep,
     },
+    chainNodes,
   };
 
   return (

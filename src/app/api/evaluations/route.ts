@@ -2,12 +2,16 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiUser, jsonError } from "@/lib/api";
+import { maybeSpawnChainTicket } from "@/lib/spawn-chain-ticket";
+import { getIncidentChain } from "@/lib/incident-chains";
 
 const schema = z.object({
   assignmentId: z.string().min(1),
   grade: z.number().int().min(1).max(10),
   xpAwarded: z.number().int().min(0).max(500).default(50),
   feedback: z.string().min(3),
+  /** Se true, forza lo spawn anche con voto alto. Se false, non spawnare. Default: auto su soglia. */
+  spawnChain: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {
@@ -66,5 +70,19 @@ export async function POST(req: Request) {
     }),
   ]);
 
-  return NextResponse.json({ evaluation });
+  let chainSpawn = null as Awaited<ReturnType<typeof maybeSpawnChainTicket>> | null;
+  const chain = getIncidentChain(assignment.ticket.chainKey);
+  const shouldConsider =
+    Boolean(chain) && parsed.data.spawnChain !== false;
+  if (shouldConsider) {
+    chainSpawn = await maybeSpawnChainTicket({
+      parentTicketId: assignment.ticketId,
+      assigneeId: assignment.assigneeId,
+      teacherId: user.id,
+      grade: parsed.data.grade,
+      force: parsed.data.spawnChain === true,
+    });
+  }
+
+  return NextResponse.json({ evaluation, chainSpawn });
 }

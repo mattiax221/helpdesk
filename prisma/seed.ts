@@ -227,6 +227,44 @@ async function main() {
     });
   }
 
+  // Catena DNS → AD: se la diagnosi è debole nasce il join dominio
+  const chainTicket = await prisma.ticket.create({
+    data: {
+      classroomId: classroom.id,
+      createdById: teacher.id,
+      title: "DNS interno non risolve i nomi",
+      description:
+        "I PC dell'aula non aprono i siti per nome (DNS_PROBE_FINISHED_NXDOMAIN). Con l'IP a volte sì. Tra 10 minuti c'è lezione.",
+      category: TicketCategory.RETI_DNS,
+      priority: TicketPriority.ALTA,
+      difficulty: Difficulty.INTERMEDIO,
+      slaMinutes: 40,
+      fakeLogs: JSON.stringify([
+        {
+          name: "nslookup.txt",
+          content:
+            "> nslookup www.google.com\nServer: UnKnown\nAddress: 192.168.1.1\n*** Server failed\n\n> nslookup dc01.istituto.local\n*** Non-existent domain",
+        },
+      ]),
+      secretNotes:
+        "Causa: DNS interno/AD irraggiungibile o forwarder assente. Fix: puntare DNS al DC/forwarder, flushdns, test porta 53, NON limitarsi a 8.8.8.8 sui client dominio.",
+      clientHints: JSON.stringify([
+        "Ieri hanno cambiato il router del laboratorio.",
+        "Con IP numerico alcuni servizi rispondono.",
+        "Il telefono in 4G naviga ok.",
+      ]),
+      attachmentsMeta: JSON.stringify([{ name: "screenshot-cliente.png", type: "image/png" }]),
+      chainKey: "dns-to-ad",
+      chainStep: 0,
+    },
+  });
+  await prisma.ticketAssignment.createMany({
+    data: students.map((s) => ({
+      ticketId: chainTicket.id,
+      assigneeId: s.id,
+    })),
+  });
+
   const labSeed = [
     {
       gameKey: "rj45",
@@ -282,14 +320,14 @@ async function main() {
       description: "Un ticket mal risolto genera un secondo ticket correlato (DNS → AD join).",
       category: "Didattica",
       priority: "HIGH" as const,
-      status: "IDEA" as const,
+      status: "DONE" as const,
     },
     {
       title: "Modalità esame a tempo",
-      description: "Sessione senza chat AI, solo log, export PDF voto + diagnosi.",
+      description: "Sessione senza chat AI, solo log, export PDF voto + diagnosi. (non prioritaria)",
       category: "Valutazione",
-      priority: "HIGH" as const,
-      status: "PLANNED" as const,
+      priority: "LOW" as const,
+      status: "IDEA" as const,
     },
     {
       title: "Peer review tra studenti",
@@ -299,11 +337,11 @@ async function main() {
       status: "IDEA" as const,
     },
     {
-      title: "Lab topologia di rete",
-      description: "Mappa clickable switch/router/firewall: scegli dove intervenire.",
+      title: "Lab topologia di rete (VirtLab)",
+      description: "Mappa switch/router/firewall collegata al repo VirtLab.",
       category: "Mini-game",
       priority: "HIGH" as const,
-      status: "IDEA" as const,
+      status: "PLANNED" as const,
     },
     {
       title: "Runbook builder",

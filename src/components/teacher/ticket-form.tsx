@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CATEGORY_LABELS, DIFFICULTY_LABELS, PRIORITY_LABELS } from "@/lib/labels";
+import { INCIDENT_CHAINS } from "@/lib/incident-chains";
 
 type ClassroomOption = {
   id: string;
@@ -45,6 +46,7 @@ export function TicketForm({
   const [assignTo, setAssignTo] = useState<"all" | "selected" | "group">("all");
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [groupId, setGroupId] = useState("");
+  const [chainKey, setChainKey] = useState<string>("");
   const [catalog, setCatalog] = useState<
     { id: number; title: string; category: string; difficulty: string; priority: string }[]
   >([]);
@@ -200,6 +202,7 @@ export function TicketForm({
           { name: "screenshot-cliente.png", type: "image/png" },
         ],
         clientHints: form.clientHints.split("\n").map((s) => s.trim()).filter(Boolean),
+        chainKey: chainKey || null,
         assignTo,
         studentIds: selectedStudents,
         groupId: assignTo === "group" ? groupId : undefined,
@@ -305,6 +308,60 @@ export function TicketForm({
                 })}
               </div>
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-teal-800/15 bg-gradient-to-br from-teal-50/80 to-background dark:from-teal-950/30">
+        <CardHeader>
+          <CardTitle className="text-base">Catena di incidenti</CardTitle>
+          <CardDescription>
+            Opzionale: se la diagnosi è debole (voto basso), nasce automaticamente l’incidente
+            successivo allo stesso studente — come in un help desk reale.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <button
+              type="button"
+              onClick={() => setChainKey("")}
+              className={`rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+                !chainKey
+                  ? "border-teal-600 bg-teal-700/10"
+                  : "hover:bg-muted"
+              }`}
+            >
+              <span className="font-medium">Nessuna catena</span>
+              <span className="mt-0.5 block text-[11px] text-muted-foreground">
+                Ticket singolo classico
+              </span>
+            </button>
+            {INCIDENT_CHAINS.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => {
+                  setChainKey(c.key);
+                  const step0 = c.steps[0];
+                  applyTicket(step0);
+                }}
+                className={`rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+                  chainKey === c.key
+                    ? "border-teal-600 bg-teal-700/10"
+                    : "hover:bg-muted"
+                }`}
+              >
+                <span className="font-medium">{c.name}</span>
+                <span className="mt-0.5 block text-[11px] text-muted-foreground">
+                  {c.steps.map((s) => s.nodeLabel).join(" → ")}
+                </span>
+              </button>
+            ))}
+          </div>
+          {chainKey && (
+            <p className="text-xs text-muted-foreground">
+              Caricato il passo 1 della catena. In valutazione, sotto soglia nasce il passo 2.
+            </p>
           )}
         </CardContent>
       </Card>

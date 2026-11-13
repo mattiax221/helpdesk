@@ -60,8 +60,8 @@ L’accesso con Codice Classe richiede che lo studente sia già nel roster della
 
 1. Accede e crea una o più **Classi** (codice univoco tipo `IT-9482`).
 2. Opzionale: pulsante **Collega Google Classroom** (OAuth predisposto).
-3. Crea ticket **manuali** o con **Generatore AI**, con note segrete (soluzione attesa).
-4. Assegna a tutta la classe, a singoli studenti o a **gruppi**.
+3. Crea ticket **manuali**, da **catalogo**, **AI** o come **catena di incidenti** (es. DNS → Domain Join).
+4. Assegna a tutta la classe, a singoli studenti o a **gruppi**. Se valuti sotto soglia un ticket in catena, nasce l’incidente successivo.
 5. Nella classe vedi **statistiche** (XP medi, ticket chiusi, voti) e **classifica Lab**.
 6. In **Revisioni** valuta diagnosi (voto 1–10 + XP + feedback).
 7. In **Notifiche**: avvisi in-app se gli alunni non finiscono i compiti Lab in tempo o superano lo SLA.
