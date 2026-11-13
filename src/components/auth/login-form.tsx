@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function onClassLogin(e: React.FormEvent<HTMLFormElement>) {
@@ -40,8 +38,8 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
       );
       return;
     }
-    router.push("/student");
-    router.refresh();
+    // Hard navigation so the session cookie is included on the next request (Vercel/HTTPS).
+    window.location.assign("/student");
   }
 
   async function onEmailLogin(e: React.FormEvent<HTMLFormElement>) {
@@ -59,8 +57,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
       toast.error("Credenziali non valide");
       return;
     }
-    router.push("/");
-    router.refresh();
+    window.location.assign("/");
   }
 
   return (

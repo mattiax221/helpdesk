@@ -24,10 +24,18 @@ const emailLoginSchema = z.object({
 const googleConfigured =
   Boolean(process.env.GOOGLE_CLIENT_ID) && Boolean(process.env.GOOGLE_CLIENT_SECRET);
 
+const useSecureCookies =
+  process.env.VERCEL === "1" ||
+  process.env.NODE_ENV === "production" ||
+  (process.env.AUTH_URL ?? "").startsWith("https://");
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Credentials + JWT: avoid DB sessions from the adapter interfering on serverless.
   adapter: PrismaAdapter(prisma),
   trustHost: true,
-  session: { strategy: "jwt" },
+  useSecureCookies,
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   pages: {
     signIn: "/login",
   },

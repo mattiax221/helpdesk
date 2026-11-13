@@ -65,7 +65,19 @@ Opzionali:
 4. Roadmap: `/roadmap`
 5. Togli `SEED_ON_DEPLOY`
 
-## 5. Problemi tipici Supabase + Prisma
+## 5. Login che “torna indietro” su `/login`
+
+Se dopo **Entra come tecnico** o **Accedi** (docente) resti / torni su `/login`:
+
+1. Su Vercel → **Settings → Environment Variables** verifica:
+   - `AUTH_SECRET` presente (stesso valore su Production)
+   - `AUTH_URL` = esattamente l’URL del deploy, es. `https://helpdesk-xxx.vercel.app` (https, senza slash finale)
+   - `AUTH_TRUST_HOST` = `true`
+2. **Redeploy** dopo aver salvato le variabili
+3. Se non hai mai seedato: metti `SEED_ON_DEPLOY=1`, ridistribuisci una volta, poi **rimuovi** `SEED_ON_DEPLOY`
+4. Demo: tecnico `IT-9482` + **Marco Rossi** · docente `docente@helpdesklab.it` / `demo1234`
+
+## 6. Problemi tipici Supabase + Prisma
 
 - **Prepared statements / PgBouncer**: aggiungi `pgbouncer=true` sulla URL pooler Transaction
 - **`db push` fallisce sul pooler**: usa temporaneamente la URL **direct** (`5432`) in locale:
@@ -74,7 +86,7 @@ Opzionali:
   ```
 - **Password con caratteri speciali**: URL-encode (`@` → `%40`, ecc.)
 
-## 6. CLI (opzionale)
+## 7. CLI (opzionale)
 
 ```bash
 npx vercel login

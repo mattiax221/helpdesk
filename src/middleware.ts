@@ -2,12 +2,28 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+function authSecret() {
+  return process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const token = await getToken({
-    req,
-    secret: process.env.AUTH_SECRET,
-  });
+  const secret = authSecret();
+
+  // On Vercel the session cookie is `__Secure-authjs.session-token`.
+  // getToken must use secureCookie=true or it looks for the wrong name and always redirects to /login.
+  const isHttps =
+    req.headers.get("x-forwarded-proto") === "https" ||
+    process.env.VERCEL === "1" ||
+    process.env.NODE_ENV === "production";
+
+  const token = secret
+    ? await getToken({
+        req,
+        secret,
+        secureCookie: isHttps,
+      })
+    : null;
 
   const isAuthPage = pathname.startsWith("/login");
   const isProtected =
