@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiUser, jsonError } from "@/lib/api";
-import { clientReplyForHint } from "@/lib/ai";
+import { generateClientReply } from "@/lib/ai";
 
 const schema = z.object({
   body: z.string().min(1).max(2000),
@@ -18,7 +18,13 @@ export async function POST(
 
   const assignment = await prisma.ticketAssignment.findUnique({
     where: { id },
-    include: { ticket: { include: { classroom: true } } },
+    include: {
+      ticket: { include: { classroom: true } },
+      comments: {
+        orderBy: { createdAt: "asc" },
+        take: 12,
+      },
+    },
   });
   if (!assignment) return jsonError("Assignment non trovato", 404);
 
@@ -42,6 +48,8 @@ export async function POST(
   });
 
   let clientComment = null;
+  let replySource: "ai" | "scripted" | null = null;
+
   if (isAssignee) {
     let hints: string[] = [];
     try {
@@ -49,19 +57,38 @@ export async function POST(
     } catch {
       hints = [];
     }
-    const reply = clientReplyForHint(hints, assignment.hintIndex, parsed.data.body);
+
+    const recentChat = assignment.comments.map((c) => ({
+      role: (c.authorType === "CLIENT" ? "client" : "student") as "client" | "student",
+      body: c.body,
+    }));
+
+    const generated = await generateClientReply({
+      question: parsed.data.body,
+      ticketTitle: assignment.ticket.title,
+      ticketDescription: assignment.ticket.description,
+      hints,
+      hintIndex: assignment.hintIndex,
+      recentChat,
+    });
+    replySource = generated.source;
+
     clientComment = await prisma.ticketComment.create({
       data: {
         assignmentId: id,
         authorType: "CLIENT",
-        body: reply,
+        body: generated.reply,
       },
     });
+
     await prisma.ticketAssignment.update({
       where: { id },
       data: { hintIndex: Math.min(assignment.hintIndex + 1, hints.length) },
     });
   }
 
-  return NextResponse.json({ comments: [studentComment, clientComment].filter(Boolean) });
+  return NextResponse.json({
+    comments: [studentComment, clientComment].filter(Boolean),
+    replySource,
+  });
 }

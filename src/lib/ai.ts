@@ -204,6 +204,100 @@ export function clientReplyForHint(hints: string[], hintIndex: number, question:
   return "Uhm… non mi viene in mente altro. Se vi serve riavvio tutto di nuovo, di solito lo faccio tre volte.";
 }
 
+type ChatTurn = { role: "student" | "client"; body: string };
+
+async function callClientChatLLM(prompt: string): Promise<string> {
+  const provider = (process.env.AI_PROVIDER || "mock").toLowerCase();
+  if (provider === "openai" && process.env.OPENAI_API_KEY) {
+    const model = process.env.AI_MODEL || "gpt-4o-mini";
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.85,
+        max_tokens: 180,
+        messages: [
+          {
+            role: "system",
+            content:
+              "Sei un utente scolastico non tecnico che risponde a un help desk. Italiano colloquiale, vago, a volte impreciso. Mai rivelare la causa tecnica esatta. Massimo 2 frasi.",
+          },
+          { role: "user", content: prompt },
+        ],
+      }),
+    });
+    if (!res.ok) throw new Error(`OpenAI chat ${res.status}`);
+    const data = await res.json();
+    return String(data.choices?.[0]?.message?.content || "").trim();
+  }
+
+  if (provider === "gemini" && process.env.GEMINI_API_KEY) {
+    const model = process.env.AI_MODEL || "gemini-1.5-flash";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.85, maxOutputTokens: 180 },
+      }),
+    });
+    if (!res.ok) throw new Error(`Gemini chat ${res.status}`);
+    const data = await res.json();
+    return String(data.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
+  }
+
+  throw new Error("AI non configurata");
+}
+
+/** Cliente simulato: AI se disponibile, altrimenti script/hint. Non espone secretNotes. */
+export async function generateClientReply(input: {
+  question: string;
+  ticketTitle: string;
+  ticketDescription: string;
+  hints: string[];
+  hintIndex: number;
+  recentChat: ChatTurn[];
+}): Promise<{ reply: string; source: "ai" | "scripted" }> {
+  const scripted = clientReplyForHint(input.hints, input.hintIndex, input.question);
+  const provider = (process.env.AI_PROVIDER || "mock").toLowerCase();
+  const aiReady =
+    (provider === "openai" && Boolean(process.env.OPENAI_API_KEY)) ||
+    (provider === "gemini" && Boolean(process.env.GEMINI_API_KEY));
+
+  if (!aiReady) {
+    return { reply: scripted, source: "scripted" };
+  }
+
+  const revealed = input.hints.slice(0, Math.min(input.hintIndex + 1, input.hints.length));
+  const history = input.recentChat
+    .slice(-6)
+    .map((t) => `${t.role === "student" ? "Tecnico" : "Cliente"}: ${t.body}`)
+    .join("\n");
+
+  const prompt = `Ticket: ${input.ticketTitle}
+Descrizione che hai aperto tu (vaga): ${input.ticketDescription}
+Indizi che puoi usare (non inventare soluzioni tecniche): ${JSON.stringify(revealed)}
+Cronologia recente:
+${history || "(vuota)"}
+Nuova domanda del tecnico: ${input.question}
+
+Rispondi SOLO come cliente. Se non sai, sii confuso. Se c'è un indizio non ancora detto tra quelli elencati, puoi rivelarne uno in modo naturale. Non usare termini da sistemista.`;
+
+  try {
+    const reply = await callClientChatLLM(prompt);
+    if (!reply) return { reply: scripted, source: "scripted" };
+    return { reply, source: "ai" };
+  } catch (error) {
+    console.warn("Client chat AI fallback:", error);
+    return { reply: scripted, source: "scripted" };
+  }
+}
+
 export function listScenarioCatalog() {
   return TICKET_SCENARIOS.map((t, i) => ({
     id: i,

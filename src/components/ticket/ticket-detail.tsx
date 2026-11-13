@@ -54,6 +54,8 @@ export function TicketDetail({ assignment }: { assignment: Detail }) {
   const [comments, setComments] = useState(assignment.comments);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [chatBusy, setChatBusy] = useState(false);
+  const [lastReplySource, setLastReplySource] = useState<"ai" | "scripted" | null>(null);
 
   const logs = useMemo(() => {
     try {
@@ -104,12 +106,14 @@ export function TicketDetail({ assignment }: { assignment: Detail }) {
 
   async function sendComment(e: React.FormEvent) {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || chatBusy) return;
+    setChatBusy(true);
     const res = await fetch(`/api/assignments/${assignment.id}/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ body: message }),
     });
+    setChatBusy(false);
     if (!res.ok) {
       toast.error("Messaggio non inviato");
       return;
@@ -117,6 +121,9 @@ export function TicketDetail({ assignment }: { assignment: Detail }) {
     const data = await res.json();
     setComments((prev) => [...prev, ...data.comments]);
     setMessage("");
+    if (data.replySource === "ai" || data.replySource === "scripted") {
+      setLastReplySource(data.replySource);
+    }
   }
 
   return (
@@ -154,9 +161,20 @@ export function TicketDetail({ assignment }: { assignment: Detail }) {
         </div>
 
         <div className="rounded-lg border bg-background/80 p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Chat troubleshooting col cliente
-          </h2>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Chat troubleshooting col cliente
+            </h2>
+            {lastReplySource && (
+              <Badge variant="outline" className="text-[10px]">
+                {lastReplySource === "ai" ? "Cliente AI" : "Cliente script"}
+              </Badge>
+            )}
+          </div>
+          <p className="mb-2 text-xs text-muted-foreground">
+            Con API key (OpenAI/Gemini) il cliente risponde in modo più naturale; senza chiave usa indizi
+            guidati. La soluzione segreta non viene mai rivelata.
+          </p>
           <ScrollArea className="mb-3 h-56 rounded-md border p-3">
             <div className="space-y-3">
               {comments.length === 0 && (
@@ -180,6 +198,9 @@ export function TicketDetail({ assignment }: { assignment: Detail }) {
                   {c.body}
                 </div>
               ))}
+              {chatBusy && (
+                <p className="text-xs text-muted-foreground animate-pulse">Il cliente sta rispondendo…</p>
+              )}
             </div>
           </ScrollArea>
           <form className="flex gap-2" onSubmit={sendComment}>
@@ -188,8 +209,13 @@ export function TicketDetail({ assignment }: { assignment: Detail }) {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Es. Da quando succede? Avete cambiato qualcosa in rete?"
               rows={2}
+              disabled={chatBusy}
             />
-            <Button type="submit" className="self-end bg-teal-700 hover:bg-teal-800">
+            <Button
+              type="submit"
+              className="self-end bg-teal-700 hover:bg-teal-800"
+              disabled={chatBusy}
+            >
               Invia
             </Button>
           </form>

@@ -48,6 +48,7 @@ Vedi [`.env.example`](.env.example).
 - `OPENAI_API_KEY` / `GEMINI_API_KEY` + `AI_MODEL`
 
 Senza chiavi AI l’endpoint `/api/generate-ticket` usa un generatore locale di scenari realistici.
+La chat col “cliente” nel ticket usa la stessa configurazione AI se disponibile; altrimenti risponde con indizi scriptati (senza rivelare le note segrete).
 
 Il seed demo (`npm run db:seed`) è solo locale/manuale: non parte in automatico a runtime.
 L’accesso con Codice Classe richiede che lo studente sia già nel roster della classe.
