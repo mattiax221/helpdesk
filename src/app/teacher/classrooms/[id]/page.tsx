@@ -12,7 +12,9 @@ import { AddStudentForm } from "@/components/teacher/add-student-form";
 import { GroupsPanel } from "@/components/teacher/groups-panel";
 import { ClassroomStatsPanel } from "@/components/teacher/classroom-stats";
 import { LabLeaderboard } from "@/components/teacher/lab-leaderboard";
+import { AssignLabTaskForm } from "@/components/teacher/assign-lab-task-form";
 import { computeClassroomStats } from "@/lib/classroom-stats";
+import { getLabGame } from "@/lib/lab-catalog";
 
 export default async function ClassroomDetailPage({
   params,
@@ -47,6 +49,12 @@ export default async function ClassroomDetailPage({
           },
         },
         orderBy: { name: "asc" },
+      },
+      labTasks: {
+        include: {
+          submissions: true,
+        },
+        orderBy: { createdAt: "desc" },
       },
       tickets: {
         include: {
@@ -99,7 +107,7 @@ export default async function ClassroomDetailPage({
     .filter((r) => r.plays > 0)
     .sort((a, b) => b.labXp - a.labXp || b.bestScore - a.bestScore);
 
-  const gameKeys = ["rj45", "terminal", "ports", "subnet"] as const;
+  const gameKeys = ["rj45", "terminal", "ports", "subnet", "osi", "cli", "wifi"] as const;
   const byGame = gameKeys.map((gameKey) => {
     const bestByUser = new Map<string, number>();
     for (const g of gameScores.filter((x) => x.gameKey === gameKey)) {
@@ -137,6 +145,56 @@ export default async function ClassroomDetailPage({
 
       <div className="mb-8">
         <LabLeaderboard rows={labRows} byGame={byGame} />
+      </div>
+
+      <div className="mb-8 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <AssignLabTaskForm
+          classroomId={classroom.id}
+          students={students.map((m) => ({ id: m.user.id, name: m.user.name }))}
+          groups={classroom.groups.map((g) => ({ id: g.id, name: g.name }))}
+        />
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              Compiti Lab ({classroom.labTasks.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {classroom.labTasks.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                Nessun compito ancora. Assegnane uno dal pannello a sinistra.
+              </p>
+            )}
+            {classroom.labTasks.map((t) => {
+              const done = t.submissions.filter((s) => s.status === "COMPLETED").length;
+              const game = getLabGame(t.gameKey);
+              return (
+                <div
+                  key={t.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
+                >
+                  <div>
+                    <p className="font-medium">{t.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {game?.title || t.gameKey} · min {t.minScore}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">
+                      {done}/{t.submissions.length} consegnati
+                    </Badge>
+                    <Link
+                      href={`/lab/${t.id}`}
+                      className={cn(buttonVariants({ size: "sm", variant: "ghost" }))}
+                    >
+                      Apri
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">

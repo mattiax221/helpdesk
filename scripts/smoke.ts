@@ -187,6 +187,14 @@ async function main() {
   if (overdue.state === "overdue") pass("sla overdue detection");
   else fail("sla overdue detection", overdue.state);
 
+  const labTasks = await prisma.labTask.count();
+  if (labTasks >= 1) pass("lab tasks seeded", `${labTasks}`);
+  else fail("lab tasks seeded", "0");
+
+  const { LAB_GAMES } = await import("../src/lib/lab-catalog");
+  if (LAB_GAMES.length >= 7) pass("lab catalog size", `${LAB_GAMES.length}`);
+  else fail("lab catalog size", `${LAB_GAMES.length}`);
+
   const failed = checks.filter((c) => !c.ok);
   console.log(`\n${checks.length - failed.length}/${checks.length} passed`);
   await prisma.$disconnect();

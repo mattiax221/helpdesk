@@ -30,7 +30,11 @@ function shuffle<T>(arr: T[]): T[] {
   return copy;
 }
 
-export function PortsGame() {
+export function PortsGame({
+  onComplete,
+}: {
+  onComplete?: (score: number, meta?: Record<string, unknown>) => Promise<void> | void;
+} = {}) {
   const round = useMemo(() => shuffle(PAIRS).slice(0, 8), []);
   const [ports] = useState(() => shuffle(round.map((p) => p.port)));
   const [services] = useState(() => shuffle(round.map((p) => p.service)));
@@ -76,17 +80,11 @@ export function PortsGame() {
         setDone(true);
         setRunning(false);
         const score = Math.max(20, seconds * 3 - mistakes * 5);
-        const res = await fetch("/api/games/score", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            gameKey: "ports",
-            score,
-            meta: { mistakes, secondsLeft: seconds },
-          }),
-        });
-        const data = await res.json().catch(() => ({}));
-        toast.success(`Firewall mastery! +${data.xpEarned ?? 0} XP`);
+        if (onComplete) {
+          await onComplete(score, { mistakes, secondsLeft: seconds });
+        } else {
+          toast.success(`Firewall mastery! ${score} pts`);
+        }
       } else {
         toast.success("Match!");
       }

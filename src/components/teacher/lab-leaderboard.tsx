@@ -15,6 +15,9 @@ const GAME_LABELS: Record<string, string> = {
   terminal: "Terminal",
   ports: "Ports",
   subnet: "Subnet",
+  osi: "OSI",
+  cli: "CLI",
+  wifi: "Wi‑Fi",
 };
 
 export function LabLeaderboard({
@@ -35,7 +38,7 @@ export function LabLeaderboard({
       <CardContent className="space-y-4">
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Nessun punteggio mini-game ancora. Gli studenti guadagnano XP in /lab.
+            Nessun punteggio ancora. Gli studenti guadagnano XP svolgendo i compiti in Compiti Lab.
           </p>
         ) : (
           <div className="space-y-2">

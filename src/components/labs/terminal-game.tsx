@@ -146,7 +146,11 @@ function shuffle<T>(arr: T[]): T[] {
   return copy;
 }
 
-export function TerminalGame() {
+export function TerminalGame({
+  onComplete,
+}: {
+  onComplete?: (score: number, meta?: Record<string, unknown>) => Promise<void> | void;
+} = {}) {
   const [deck] = useState(() => shuffle(CHALLENGES).slice(0, 8));
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -171,17 +175,11 @@ export function TerminalGame() {
   async function next() {
     if (index >= deck.length - 1) {
       setDone(true);
-      const res = await fetch("/api/games/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          gameKey: "terminal",
-          score,
-          meta: { answered: deck.length },
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      toast.success(`Sfida completata · ${score} punti · +${data.xpEarned ?? 0} XP`);
+      if (onComplete) {
+        await onComplete(score, { answered: deck.length });
+      } else {
+        toast.success(`Sfida completata · ${score} punti`);
+      }
       return;
     }
     setIndex((i) => i + 1);

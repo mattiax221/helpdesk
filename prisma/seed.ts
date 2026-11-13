@@ -5,6 +5,8 @@ const prisma = new PrismaClient();
 
 async function main() {
   await prisma.gameScore.deleteMany();
+  await prisma.labTaskSubmission.deleteMany();
+  await prisma.labTask.deleteMany();
   await prisma.evaluation.deleteMany();
   await prisma.ticketComment.deleteMany();
   await prisma.ticketAssignment.deleteMany();
@@ -221,6 +223,49 @@ async function main() {
         ticketId: ticket.id,
         assigneeId: s.id,
       })),
+    });
+  }
+
+  const labSeed = [
+    {
+      gameKey: "rj45",
+      title: "Compito: Crimpatura T568B",
+      instructions: "Completa almeno una crimpatura T568B corretta entro il tempo. Punteggio minimo 60.",
+      minScore: 60,
+    },
+    {
+      gameKey: "ports",
+      title: "Compito: Porte firewall",
+      instructions: "Abbina correttamente porte e servizi. Serve per la lezione di sicurezza.",
+      minScore: 55,
+    },
+    {
+      gameKey: "osi",
+      title: "Compito: Livelli OSI",
+      instructions: "Collega protocolli/dispositivi al livello OSI corretto.",
+      minScore: 55,
+    },
+    {
+      gameKey: "wifi",
+      title: "Compito: Sicurezza Wi‑Fi",
+      instructions: "Ordina gli standard e rispondi alle domande sulle best practice scolastiche.",
+      minScore: 50,
+    },
+  ];
+
+  for (const lab of labSeed) {
+    await prisma.labTask.create({
+      data: {
+        classroomId: classroom.id,
+        createdById: teacher.id,
+        gameKey: lab.gameKey,
+        title: lab.title,
+        instructions: lab.instructions,
+        minScore: lab.minScore,
+        submissions: {
+          create: students.map((s) => ({ userId: s.id, status: "ASSIGNED" })),
+        },
+      },
     });
   }
 

@@ -92,7 +92,11 @@ function promptFor(c: Challenge): string {
   }
 }
 
-export function SubnetGame() {
+export function SubnetGame({
+  onComplete,
+}: {
+  onComplete?: (score: number, meta?: Record<string, unknown>) => Promise<void> | void;
+} = {}) {
   const [challenge, setChallenge] = useState<Challenge>(() => makeChallenge());
   const [answer, setAnswer] = useState("");
   const [score, setScore] = useState(0);
@@ -138,17 +142,11 @@ export function SubnetGame() {
   async function finish(finalScore: number) {
     setDone(true);
     setRunning(false);
-    const res = await fetch("/api/games/score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        gameKey: "subnet",
-        score: finalScore,
-        meta: { rounds: round, streak, secondsLeft: seconds },
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    toast.success(`Subnet Lab completato! +${data.xpEarned ?? 0} XP`);
+    if (onComplete) {
+      await onComplete(finalScore, { rounds: round, streak, secondsLeft: seconds });
+    } else {
+      toast.success(`Subnet Lab completato! ${finalScore} pts`);
+    }
   }
 
   async function submit(e: React.FormEvent) {

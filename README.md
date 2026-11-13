@@ -69,7 +69,7 @@ L’accesso con Codice Classe richiede che lo studente sia già nel roster della
 1. Entra con Codice Classe + Nome/Cognome.
 2. Usa la **Kanban board** con filtri priorità/SLA e alert scadenza.
 3. Nel dettaglio ticket: descrizione cliente, allegati/log/screenshot, chat indizi, campi di chiusura obbligatori.
-4. Sezione **Lab & Mini-Games**: RJ45 (T568A/B/Crossover), terminale IP, Port Strike, Subnet/CIDR.
+4. Sezione **Compiti Lab**: esercizi assegnati dal docente (RJ45, terminal, porte, subnet, OSI, CLI, Wi‑Fi). Ogni mini-game è un compito con punteggio minimo e consegna.
 5. Toggle lingua **IT/EN** nell’header per laboratori bilingue.
 
 ### Smoke test

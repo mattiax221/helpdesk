@@ -35,7 +35,11 @@ function shuffle<T>(arr: T[]): T[] {
   return copy;
 }
 
-export function Rj45Game() {
+export function Rj45Game({
+  onComplete,
+}: {
+  onComplete?: (score: number, meta?: Record<string, unknown>) => Promise<void> | void;
+} = {}) {
   const [standard, setStandard] = useState<Standard>("T568B");
   const [order, setOrder] = useState<string[]>(() => shuffle(COLORS.map((c) => c.id)));
   const [selected, setSelected] = useState<number | null>(null);
@@ -93,17 +97,11 @@ export function Rj45Game() {
       setWon(true);
       setRunning(false);
       const score = Math.max(10, seconds * 2);
-      const res = await fetch("/api/games/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          gameKey: "rj45",
-          score,
-          meta: { standard, secondsLeft: seconds },
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      toast.success(`Crimpatura corretta! +${data.xpEarned ?? 0} XP`);
+      if (onComplete) {
+        await onComplete(score, { standard, secondsLeft: seconds });
+      } else {
+        toast.success(`Crimpatura corretta! ${score} pts`);
+      }
     } else {
       toast.error(`Ancora ${8 - correctCount} fili fuori posto`);
     }

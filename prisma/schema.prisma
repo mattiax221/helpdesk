@@ -71,6 +71,8 @@ model User {
   comments              TicketComment[]
   evaluationsGiven      Evaluation[]          @relation("EvaluationTeacher")
   gameScores            GameScore[]
+  createdLabTasks       LabTask[]             @relation("LabTaskCreator")
+  labSubmissions        LabTaskSubmission[]
 }
 
 model Account {
@@ -122,6 +124,7 @@ model Classroom {
   memberships ClassroomMembership[]
   groups      StudentGroup[]
   tickets     Ticket[]
+  labTasks    LabTask[]
 }
 
 model StudentGroup {
@@ -233,15 +236,59 @@ model Evaluation {
 }
 
 model GameScore {
-  id        String   @id @default(cuid())
-  userId    String
-  gameKey   String
-  score     Int
-  xpEarned  Int      @default(0)
-  meta      String   @default("{}")
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  userId       String
+  gameKey      String
+  score        Int
+  xpEarned     Int      @default(0)
+  meta         String   @default("{}")
+  submissionId String?
+  createdAt    DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submission LabTaskSubmission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
 
   @@index([userId, gameKey])
+}
+
+enum LabTaskStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model LabTask {
+  id            String    @id @default(cuid())
+  classroomId   String
+  createdById   String
+  gameKey       String
+  title         String
+  instructions  String    @default("")
+  minScore      Int       @default(50)
+  dueAt         DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  classroom   Classroom           @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  createdBy   User                @relation("LabTaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  submissions LabTaskSubmission[]
+}
+
+model LabTaskSubmission {
+  id          String        @id @default(cuid())
+  taskId      String
+  userId      String
+  status      LabTaskStatus @default(ASSIGNED)
+  bestScore   Int           @default(0)
+  attempts    Int           @default(0)
+  xpEarned    Int           @default(0)
+  completedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  task   LabTask     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scores GameScore[]
+
+  @@unique([taskId, userId])
 }
