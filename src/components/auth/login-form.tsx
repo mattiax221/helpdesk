@@ -81,16 +81,34 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
             <form className="space-y-3" onSubmit={onClassLogin}>
               <div className="space-y-2">
                 <Label htmlFor="classCode">Codice Classe</Label>
-                <Input id="classCode" name="classCode" placeholder="IT-9482" required />
+                <Input
+                  id="classCode"
+                  name="classCode"
+                  placeholder="es. IT-9482"
+                  autoComplete="off"
+                  required
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Nome</Label>
-                  <Input id="firstName" name="firstName" placeholder="Marco" required />
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    placeholder="Il tuo nome"
+                    autoComplete="given-name"
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Cognome</Label>
-                  <Input id="lastName" name="lastName" placeholder="Rossi" required />
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    placeholder="Il tuo cognome"
+                    autoComplete="family-name"
+                    required
+                  />
                 </div>
               </div>
               <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading}>
@@ -111,18 +129,29 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="docente@helpdesklab.it"
+                  placeholder="email@istituto.it"
+                  autoComplete="username"
                   required
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" name="password" type="password" placeholder="demo1234" required />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="La tua password"
+                  autoComplete="current-password"
+                  required
+                />
               </div>
               <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading}>
                 Accedi
               </Button>
             </form>
+            <p className="text-xs text-muted-foreground">
+              Demo docente: <strong>docente@helpdesklab.it</strong> / <strong>demo1234</strong>
+            </p>
             {googleEnabled ? (
               <Button
                 variant="outline"
