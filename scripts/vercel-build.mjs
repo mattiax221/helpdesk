@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 /**
- * Vercel build: SQLite file DB cannot run on serverless.
- * If DATABASE_URL looks like Postgres, patch Prisma provider then generate + push + build.
- *
- * Supabase: DATABASE_URL should be the pooler (6543) for the app.
- * DIRECT_URL should be the direct/session URL (5432) for prisma db push — pooler often hangs.
+ * Vercel build for Supabase Postgres:
+ * - DATABASE_URL = transaction pooler :6543 (app runtime)
+ * - DIRECT_URL   = session pooler :5432 (prisma db push / seed)
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
@@ -15,21 +13,40 @@ const databaseUrl = process.env.DATABASE_URL || "";
 const directUrl = process.env.DIRECT_URL || "";
 const isPostgres = /^(postgres|postgresql):\/\//i.test(databaseUrl);
 
+function describeUrl(label, url) {
+  try {
+    const u = new URL(url);
+    console.log(`${label}: host=${u.hostname} port=${u.port || "(default)"} user=${u.username}`);
+  } catch {
+    console.log(`${label}: (unparseable)`);
+  }
+}
+
+function isPoolerTransaction(url) {
+  return url.includes(":6543") || /pgbouncer=true/i.test(url);
+}
+
 if (!databaseUrl) {
   console.error("DATABASE_URL is required for Vercel builds.");
   process.exit(1);
 }
 
-const looksLikePooler =
-  databaseUrl.includes("pooler.supabase.com") ||
-  databaseUrl.includes(":6543/") ||
-  databaseUrl.includes("pgbouncer=true");
+describeUrl("DATABASE_URL", databaseUrl);
+if (directUrl) describeUrl("DIRECT_URL", directUrl);
 
-if (isPostgres && looksLikePooler && !directUrl) {
+if (isPostgres && isPoolerTransaction(databaseUrl) && !directUrl) {
   console.error(
-    "Supabase pooler detected, but DIRECT_URL is missing.\n" +
-      "Add DIRECT_URL (Session / direct, port 5432) from Supabase → Connect → Prisma.\n" +
-      "prisma db push hangs on the Transaction pooler (6543).",
+    "DATABASE_URL looks like Supabase transaction pooler (:6543).\n" +
+      "Add DIRECT_URL with the Session URL on port 5432.",
+  );
+  process.exit(1);
+}
+
+if (directUrl && isPoolerTransaction(directUrl)) {
+  console.error(
+    "DIRECT_URL still points to the transaction pooler (:6543 / pgbouncer=true).\n" +
+      "Use the Session URL, example:\n" +
+      "postgresql://postgres.PROJECT:PASSWORD@aws-….pooler.supabase.com:5432/postgres?sslmode=require",
   );
   process.exit(1);
 }
@@ -40,13 +57,9 @@ if (isPostgres) {
     schema = schema.replace('provider = "sqlite"', 'provider = "postgresql"');
     console.log("Prisma provider switched to postgresql for Vercel.");
   }
-  if (directUrl && !schema.includes("directUrl")) {
-    schema = schema.replace(
-      /url\s*=\s*env\("DATABASE_URL"\)/,
-      'url       = env("DATABASE_URL")\n  directUrl = env("DIRECT_URL")',
-    );
-    console.log("Prisma directUrl enabled for Supabase.");
-  }
+  // Keep schema simple for build tooling: single url. Runtime on Vercel still
+  // gets DATABASE_URL (pooler) from env for the Next.js app.
+  schema = schema.replace(/\n\s*directUrl\s*=\s*env\("DIRECT_URL"\)/, "");
   writeFileSync(schemaPath, schema);
 } else if (databaseUrl.startsWith("file:")) {
   console.warn(
@@ -56,14 +69,19 @@ if (isPostgres) {
 
 execSync("npx prisma generate", { stdio: "inherit" });
 
-// Always run schema push against DIRECT_URL when available (avoids pgbouncer hang).
 const pushEnv = { ...process.env };
-if (directUrl) {
-  pushEnv.DATABASE_URL = directUrl;
-  console.log("Running prisma db push via DIRECT_URL…");
-} else {
-  console.log("Running prisma db push via DATABASE_URL…");
+const pushUrl = directUrl || databaseUrl;
+pushEnv.DATABASE_URL = pushUrl;
+// Avoid Prisma preferring a bad DIRECT_URL during CLI.
+delete pushEnv.DIRECT_URL;
+
+describeUrl("db push using", pushUrl);
+if (isPoolerTransaction(pushUrl)) {
+  console.error("Refusing db push on transaction pooler — it hangs. Fix DIRECT_URL.");
+  process.exit(1);
 }
+
+console.log("Running prisma db push…");
 execSync("npx prisma db push --skip-generate --accept-data-loss", {
   stdio: "inherit",
   env: pushEnv,
@@ -71,7 +89,6 @@ execSync("npx prisma db push --skip-generate --accept-data-loss", {
 
 if (process.env.SEED_ON_DEPLOY === "1") {
   console.log("SEED_ON_DEPLOY=1 → running seed…");
-  // Seed also needs a working connection; prefer direct for reliability.
   execSync("npx tsx prisma/seed.ts", { stdio: "inherit", env: pushEnv });
 }
 
