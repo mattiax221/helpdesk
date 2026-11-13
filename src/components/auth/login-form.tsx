@@ -83,7 +83,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
                   <Input id="lastName" name="lastName" placeholder="Rossi" required />
                 </div>
               </div>
-              <Button className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading}>
+              <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading}>
                 Entra come tecnico L1/L2
               </Button>
             </form>
@@ -107,7 +107,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
                 <Label htmlFor="password">Password</Label>
                 <Input id="password" name="password" type="password" placeholder="demo1234" required />
               </div>
-              <Button className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading}>
+              <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading}>
                 Accedi
               </Button>
             </form>
