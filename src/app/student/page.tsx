@@ -23,6 +23,8 @@ export default async function StudentBoardPage() {
     category: a.ticket.category,
     priority: a.ticket.priority,
     slaMinutes: a.ticket.slaMinutes,
+    startedAt: a.startedAt,
+    createdAt: a.createdAt,
     grade: a.evaluation?.grade ?? null,
   }));
 
