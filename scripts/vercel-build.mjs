@@ -20,9 +20,17 @@ if (isPostgres) {
   let schema = readFileSync(schemaPath, "utf8");
   if (schema.includes('provider = "sqlite"')) {
     schema = schema.replace('provider = "sqlite"', 'provider = "postgresql"');
-    writeFileSync(schemaPath, schema);
     console.log("Prisma provider switched to postgresql for Vercel.");
   }
+  // Supabase: use DIRECT_URL for migrations/db push when present
+  if (process.env.DIRECT_URL && !schema.includes("directUrl")) {
+    schema = schema.replace(
+      'url      = env("DATABASE_URL")',
+      'url       = env("DATABASE_URL")\n  directUrl = env("DIRECT_URL")',
+    );
+    console.log("Prisma directUrl enabled for Supabase.");
+  }
+  writeFileSync(schemaPath, schema);
 } else if (databaseUrl.startsWith("file:")) {
   console.warn(
     "WARNING: SQLite file URLs are not durable on Vercel. Use Supabase Postgres.",

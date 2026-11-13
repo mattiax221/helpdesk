@@ -22,17 +22,15 @@ SQLite **non** funziona su Vercel. Usiamo **Supabase Postgres**.
    ```
 8. (Consigliato) tieni anche la connection **direct** (porta `5432`) per `db push`/migrazioni da locale se il pooler fallisce.
 
-Esempio env completo:
+In Supabase scegli **Connect → ORM → Prisma**: ti mostra già `.env.local` con:
 
 ```bash
-# App / Vercel (pooler)
-DATABASE_URL="postgresql://postgres.PROJECT:PASSWORD@aws-0-….pooler.supabase.com:6543/postgres?sslmode=require&pgbouncer=true"
-
-# Opzionale: diretta per CLI
-# DIRECT_URL="postgresql://postgres.PROJECT:PASSWORD@db.XXXX.supabase.co:5432/postgres?sslmode=require"
+DATABASE_URL="postgresql://…"   # transaction pooler (app)
+DIRECT_URL="postgresql://…"     # session/direct (migrazioni)
 ```
 
-> Non usare le API keys `anon` / `service_role` di Supabase come database: qui serve solo la **connection string Postgres**.
+Copia **entrambe** su Vercel.  
+Non usare `NEXT_PUBLIC_SUPABASE_*` per il database.
 
 ## 2. Progetto Vercel
 
