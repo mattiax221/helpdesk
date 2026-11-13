@@ -27,6 +27,8 @@ export default async function StudentBoardPage() {
     startedAt: a.startedAt,
     createdAt: a.createdAt,
     grade: a.evaluation?.grade ?? null,
+    chainKey: a.ticket.chainKey,
+    chainStep: a.ticket.chainStep,
   }));
 
   return (

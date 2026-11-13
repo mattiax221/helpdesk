@@ -45,6 +45,8 @@ export type BoardItem = {
   startedAt?: string | Date | null;
   createdAt?: string | Date | null;
   grade?: number | null;
+  chainKey?: string | null;
+  chainStep?: number | null;
 };
 
 const PRIORITY_FILTERS: Array<TicketPriority | "ALL"> = [
@@ -157,6 +159,14 @@ function KanbanCard({ item, now }: { item: BoardItem; now: number }) {
           </Badge>
           {typeof item.grade === "number" && (
             <Badge className="text-[10px]">Voto {item.grade}</Badge>
+          )}
+          {item.chainKey && (
+            <Badge
+              variant="outline"
+              className="border-teal-700/40 text-[10px] text-teal-800 dark:text-teal-200"
+            >
+              Catena · passo {(item.chainStep ?? 0) + 1}
+            </Badge>
           )}
         </div>
       </Link>
