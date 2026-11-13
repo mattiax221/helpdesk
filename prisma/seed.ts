@@ -336,7 +336,7 @@ async function main() {
     },
     {
       title: "Deploy su Vercel + Postgres",
-      description: "Ambiente cloud condiviso per la classe (Neon/Supabase).",
+      description: "Ambiente cloud condiviso per la classe (Vercel + Supabase Postgres).",
       category: "Piattaforma",
       priority: "HIGH" as const,
       status: "IN_PROGRESS" as const,

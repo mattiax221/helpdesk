@@ -25,7 +25,7 @@ if (isPostgres) {
   }
 } else if (databaseUrl.startsWith("file:")) {
   console.warn(
-    "WARNING: SQLite file URLs are not durable on Vercel. Use Neon/Supabase Postgres.",
+    "WARNING: SQLite file URLs are not durable on Vercel. Use Supabase Postgres.",
   );
 }
 

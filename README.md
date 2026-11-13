@@ -87,7 +87,7 @@ npm run smoke
 
 ## Deploy su Vercel
 
-Vedi [DEPLOY.md](./DEPLOY.md): serve PostgreSQL (Neon/Supabase), `AUTH_SECRET`, `AUTH_URL`.
+Vedi [DEPLOY.md](./DEPLOY.md): **Supabase Postgres** + `AUTH_SECRET` + `AUTH_URL`.
 
 ## Migrazione a PostgreSQL / Supabase
 
