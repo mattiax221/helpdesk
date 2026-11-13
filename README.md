@@ -41,7 +41,7 @@ Vedi [`.env.example`](.env.example).
 
 - `AUTH_SECRET` — **obbligatorio** (nessun fallback nel codice)
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — login Google + Classroom (opzionale)
-- `CRON_SECRET` — protegge il cron orario `/api/cron/overdue` (avvisi scadenze in-app)
+- `CRON_SECRET` — protegge il cron giornaliero `/api/cron/overdue` (Hobby Vercel: max 1×/giorno)
 - `ENABLE_EMAIL_NOTIFICATIONS` — lascia spento; le notifiche scadenze sono solo in-app
 - `SCHOOL_EMAIL_DOMAIN` — solo se in futuro si riattivano le email Workspace
 - `TEACHER_EMAIL_ALLOWLIST` — email (separate da virgola) che possono diventare docenti al primo login Google; altrimenti restano studenti

@@ -30,7 +30,11 @@ export function NotificationsPanel() {
   }
 
   useEffect(() => {
-    void load();
+    // Su Hobby il cron Vercel è solo giornaliero: aggiorna aprendo la pagina.
+    void (async () => {
+      await fetch("/api/notifications/scan", { method: "POST" }).catch(() => undefined);
+      await load();
+    })();
   }, []);
 
   function scanNow() {

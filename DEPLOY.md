@@ -55,7 +55,7 @@ Opzionali:
 | `SEED_ON_DEPLOY` | `1` solo al **primo** deploy per dati demo, poi **rimuovila** |
 | `GEMINI_API_KEY` / `AI_PROVIDER` | AI ticket/chat |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth Classroom (opzionale) |
-| `CRON_SECRET` | secret per cron orario `/api/cron/overdue` |
+| `CRON_SECRET` | secret per cron giornaliero `/api/cron/overdue` (Hobby: solo 1×/giorno) |
 | `TEACHER_EMAIL_ALLOWLIST` | email docenti Google |
 | `ENABLE_EMAIL_NOTIFICATIONS` | `1` solo quando vorrete le email (default: off, solo in-app) |
 | `SCHOOL_EMAIL_DOMAIN` | es. `casadicarita.it` (serve solo con email attive) |
@@ -63,7 +63,7 @@ Opzionali:
 ### Avvisi scadenze (ora solo in-app)
 
 1. Docente assegna compito Lab **con scadenza**
-2. Cron ogni ora (o **Notifiche → Controlla ora**) crea gli avvisi
+2. Cron ogni giorno alle 06:00 UTC (o **Notifiche → Controlla ora**) crea gli avvisi
 3. Campanella / pagina **Notifiche**
 
 Email istituzionale (Gmail Workspace dominio scuola): codice pronto, spento finché non mettete `ENABLE_EMAIL_NOTIFICATIONS=1`.
