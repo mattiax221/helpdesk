@@ -348,9 +348,8 @@ async function main() {
       status: "DONE" as const,
     },
     {
-      title: "Email scadenze via Gmail Workspace",
-      description:
-        "Avvisi docente se Lab/SLA scaduti; invio dal Gmail istituzionale (dominio scuola), non da provider esterni.",
+      title: "Avvisi scadenze in-app",
+      description: "Campanella docente per Lab/SLA scaduti. Email Workspace in seguito.",
       category: "Docente",
       priority: "HIGH" as const,
       status: "DONE" as const,

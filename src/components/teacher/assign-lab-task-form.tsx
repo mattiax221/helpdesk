@@ -139,7 +139,7 @@ export function AssignLabTaskForm({
                 onChange={(e) => setDueAt(e.target.value)}
               />
               <p className="text-[11px] text-muted-foreground">
-                Se uno studente non completa in tempo, ricevi un avviso (in-app + email Workspace).
+                Se uno studente non completa in tempo, compare un avviso in Notifiche.
               </p>
             </div>
           </div>

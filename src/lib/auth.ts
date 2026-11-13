@@ -53,9 +53,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                   "profile",
                   "https://www.googleapis.com/auth/classroom.courses.readonly",
                   "https://www.googleapis.com/auth/classroom.rosters.readonly",
-                  // Invio avvisi scadenze dal Gmail Workspace del docente
-                  // (mittente interno al dominio scuola → non bloccato dal filtro).
-                  "https://www.googleapis.com/auth/gmail.send",
+                  // gmail.send: riattivare quando ENABLE_EMAIL_NOTIFICATIONS=1
                 ].join(" "),
                 access_type: "offline",
                 prompt: "consent",

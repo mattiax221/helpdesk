@@ -58,9 +58,9 @@ model User {
   passwordHash  String?
   role          Role      @default(STUDENT)
   xp            Int       @default(0)
-  /// Preferenze avvisi scadenze (docente)
-  notifyOverdueEmail    Boolean   @default(true)
-  notifyTicketSlaEmail  Boolean   @default(true)
+  /// Preferenze email (spente di default: per ora solo avvisi in-app)
+  notifyOverdueEmail    Boolean   @default(false)
+  notifyTicketSlaEmail  Boolean   @default(false)
   /// Destinatario avvisi; deve essere nel dominio scuola (es. @casadicarita.it)
   notifyEmail           String?
   createdAt     DateTime  @default(now())

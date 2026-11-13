@@ -54,20 +54,19 @@ Opzionali:
 | --- | --- |
 | `SEED_ON_DEPLOY` | `1` solo al **primo** deploy per dati demo, poi **rimuovila** |
 | `GEMINI_API_KEY` / `AI_PROVIDER` | AI ticket/chat |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth + **gmail.send** (avvisi scadenze) |
-| `SCHOOL_EMAIL_DOMAIN` | es. `casadicarita.it` (default) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth Classroom (opzionale) |
 | `CRON_SECRET` | secret per cron orario `/api/cron/overdue` |
 | `TEACHER_EMAIL_ALLOWLIST` | email docenti Google |
+| `ENABLE_EMAIL_NOTIFICATIONS` | `1` solo quando vorrete le email (default: off, solo in-app) |
+| `SCHOOL_EMAIL_DOMAIN` | es. `casadicarita.it` (serve solo con email attive) |
 
-### Email scadenze e filtro posta scuola
+### Avvisi scadenze (ora solo in-app)
 
-La scuola blocca email da fuori dominio. **Non** usiamo Resend/SendGrid.
-Gli avvisi partono dal **Gmail Workspace del docente** (API `gmail.send`), mittente `@casadicarita.it`.
+1. Docente assegna compito Lab **con scadenza**
+2. Cron ogni ora (o **Notifiche → Controlla ora**) crea gli avvisi
+3. Campanella / pagina **Notifiche**
 
-1. In Google Cloud Console abilita Gmail API e aggiungi lo scope `gmail.send`
-2. Su Vercel: `GOOGLE_*`, `SCHOOL_EMAIL_DOMAIN`, `CRON_SECRET`
-3. Docente → **Notifiche** → «Collega Google Workspace»
-4. Assegna compiti Lab **con scadenza**; cron ogni ora (o «Controlla ora»)
+Email istituzionale (Gmail Workspace dominio scuola): codice pronto, spento finché non mettete `ENABLE_EMAIL_NOTIFICATIONS=1`.
 
 ## 4. Primo deploy
 

@@ -15,6 +15,11 @@ export type OverdueScanResult = {
   failedEmail: number;
 };
 
+/** Email Gmail Workspace: spento di default. Riattiva con ENABLE_EMAIL_NOTIFICATIONS=1. */
+export function emailNotificationsEnabled(): boolean {
+  return process.env.ENABLE_EMAIL_NOTIFICATIONS === "1" || process.env.ENABLE_EMAIL_NOTIFICATIONS === "true";
+}
+
 type TeacherRef = {
   id: string;
   email: string | null;
@@ -31,7 +36,7 @@ function studentLabel(u: {
   return full || "Studente";
 }
 
-/** Crea notifiche in-app per Lab e ticket SLA scaduti; invia digest Gmail ai docenti. */
+/** Crea notifiche in-app per Lab e ticket SLA scaduti. Email solo se abilitata via env. */
 export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueScanResult> {
   const result: OverdueScanResult = {
     created: 0,
@@ -39,6 +44,7 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
     skippedEmail: 0,
     failedEmail: 0,
   };
+  const emailOn = emailNotificationsEnabled();
 
   const overdueLabs = await prisma.labTask.findMany({
     where: {
@@ -82,6 +88,7 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
       const title = `Compito Lab scaduto: ${task.title}`;
       const body = `${who} non ha completato «${task.title}» (classe ${task.classroom.name}) entro ${dueLabel}. Punteggio attuale: ${sub.bestScore}/${task.minScore}.`;
 
+      const wantEmail = emailOn && task.createdBy.notifyOverdueEmail;
       const notice = await prisma.notification.create({
         data: {
           userId: task.createdById,
@@ -96,15 +103,13 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
             bestScore: sub.bestScore,
             minScore: task.minScore,
           }),
-          emailStatus: task.createdBy.notifyOverdueEmail ? "PENDING" : "SKIPPED",
-          emailError: task.createdBy.notifyOverdueEmail
-            ? null
-            : "Email disattivata nelle preferenze",
+          emailStatus: wantEmail ? "PENDING" : "SKIPPED",
+          emailError: wantEmail ? null : "Solo avviso in-app (email disattivata per ora)",
         },
       });
       result.created += 1;
 
-      if (!task.createdBy.notifyOverdueEmail) {
+      if (!wantEmail) {
         result.skippedEmail += 1;
         continue;
       }
@@ -120,7 +125,6 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
     }
   }
 
-  // Ticket oltre SLA (non risolti / non in revisione)
   const openAssignments = await prisma.ticketAssignment.findMany({
     where: { status: { in: ["TODO", "IN_PROGRESS"] } },
     include: {
@@ -143,8 +147,6 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
 
   for (const a of openAssignments) {
     const teacher = a.ticket.createdBy;
-    if (!teacher.notifyTicketSlaEmail) continue;
-    // Solo ticket delle classi del docente creatore; owner classe come fallback destinatario
     const teacherId = a.ticket.classroom.ownerId || teacher.id;
     const teacherPrefs =
       teacherId === teacher.id
@@ -158,7 +160,7 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
               notifyTicketSlaEmail: true,
             },
           });
-    if (!teacherPrefs?.notifyTicketSlaEmail) continue;
+    if (!teacherPrefs) continue;
 
     const sla = getSlaState(
       a.status,
@@ -177,6 +179,7 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
     const title = `SLA superato: ${a.ticket.title}`;
     const body = `${who} ha superato lo SLA su «${a.ticket.title}» (classe ${a.ticket.classroom.name}).`;
 
+    const wantEmail = emailOn && teacherPrefs.notifyTicketSlaEmail;
     const notice = await prisma.notification.create({
       data: {
         userId: teacherPrefs.id,
@@ -190,10 +193,16 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
           studentId: a.assigneeId,
           classroomId: a.ticket.classroomId,
         }),
-        emailStatus: "PENDING",
+        emailStatus: wantEmail ? "PENDING" : "SKIPPED",
+        emailError: wantEmail ? null : "Solo avviso in-app (email disattivata per ora)",
       },
     });
     result.created += 1;
+
+    if (!wantEmail) {
+      result.skippedEmail += 1;
+      continue;
+    }
 
     const bucket = newByTeacher.get(teacherPrefs.id) || {
       teacher: teacherPrefs,
@@ -205,6 +214,10 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
     newByTeacher.set(teacherPrefs.id, bucket);
   }
 
+  if (!emailOn) {
+    return result;
+  }
+
   for (const [teacherId, bucket] of newByTeacher) {
     if (!bucket.lines.length) continue;
 
@@ -213,7 +226,6 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
       bucket.teacher.email?.trim().toLowerCase() ||
       null;
 
-    // Prefer Google Workspace address if profile is school domain
     const tokens = await getFreshGoogleAccessToken(teacherId);
     const googleEmail = tokens
       ? await fetchGoogleProfileEmail(tokens.accessToken)
@@ -227,7 +239,7 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
         where: { id: { in: bucket.noticeIds }, emailStatus: "PENDING" },
         data: {
           emailStatus: "SKIPPED",
-          emailError: `Nessuna email nel dominio scuola (${schoolDomainLabel()}). Imposta notifyEmail o collega Google Workspace.`,
+          emailError: `Nessuna email nel dominio scuola (${schoolDomainLabel()}).`,
         },
       });
       result.skippedEmail += bucket.noticeIds.length;
@@ -239,8 +251,7 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
         where: { id: { in: bucket.noticeIds }, emailStatus: "PENDING" },
         data: {
           emailStatus: "SKIPPED",
-          emailError:
-            "Collega Google Workspace con permesso Gmail (gmail.send) per ricevere email nel dominio scuola.",
+          emailError: "Collega Google Workspace con gmail.send per le email.",
         },
       });
       result.skippedEmail += bucket.noticeIds.length;
@@ -256,8 +267,6 @@ export async function scanAndNotifyOverdue(now = new Date()): Promise<OverdueSca
       ...bucket.lines,
       "",
       "Apri HelpDesk Lab → Notifiche per i dettagli.",
-      "",
-      `(Inviata dal tuo account Google Workspace ${schoolDomainLabel()} — non da un servizio email esterno.)`,
     ].join("\n");
 
     const sent = await sendTeacherGmail({

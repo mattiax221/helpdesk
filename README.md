@@ -40,9 +40,10 @@ La classe seed è **3ª Operatore Informatico - Lab Reti** con 5 ticket già ass
 Vedi [`.env.example`](.env.example).
 
 - `AUTH_SECRET` — **obbligatorio** (nessun fallback nel codice)
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — login Google + Classroom + **gmail.send** (avvisi scadenze)
-- `SCHOOL_EMAIL_DOMAIN` — dominio Workspace scuola (default `casadicarita.it`); le email avvisi partono dal Gmail del docente, non da provider esterni
-- `CRON_SECRET` — protegge il cron orario `/api/cron/overdue`
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — login Google + Classroom (opzionale)
+- `CRON_SECRET` — protegge il cron orario `/api/cron/overdue` (avvisi scadenze in-app)
+- `ENABLE_EMAIL_NOTIFICATIONS` — lascia spento; le notifiche scadenze sono solo in-app
+- `SCHOOL_EMAIL_DOMAIN` — solo se in futuro si riattivano le email Workspace
 - `TEACHER_EMAIL_ALLOWLIST` — email (separate da virgola) che possono diventare docenti al primo login Google; altrimenti restano studenti
 - `AI_PROVIDER` — `mock` (default), `openai` o `gemini`
 - `OPENAI_API_KEY` / `GEMINI_API_KEY` + `AI_MODEL`
@@ -63,7 +64,7 @@ L’accesso con Codice Classe richiede che lo studente sia già nel roster della
 4. Assegna a tutta la classe, a singoli studenti o a **gruppi**.
 5. Nella classe vedi **statistiche** (XP medi, ticket chiusi, voti) e **classifica Lab**.
 6. In **Revisioni** valuta diagnosi (voto 1–10 + XP + feedback).
-7. In **Notifiche**: avvisi se gli alunni non finiscono i compiti Lab in tempo o superano lo SLA. Email via Gmail Workspace del docente (dominio scuola).
+7. In **Notifiche**: avvisi in-app se gli alunni non finiscono i compiti Lab in tempo o superano lo SLA.
 
 ### Studente
 
