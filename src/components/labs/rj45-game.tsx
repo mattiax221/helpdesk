@@ -91,18 +91,17 @@ export function Rj45Game() {
       setWon(true);
       setRunning(false);
       const score = Math.max(10, seconds * 2);
-      const xpEarned = Math.min(40, 10 + Math.floor(seconds / 3));
-      await fetch("/api/games/score", {
+      const res = await fetch("/api/games/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           gameKey: "rj45",
           score,
-          xpEarned,
           meta: { standard, secondsLeft: seconds },
         }),
       });
-      toast.success(`Crimpatura corretta! +${xpEarned} XP`);
+      const data = await res.json().catch(() => ({}));
+      toast.success(`Crimpatura corretta! +${data.xpEarned ?? 0} XP`);
     } else {
       toast.error(`Ancora ${8 - correctCount} fili fuori posto`);
     }

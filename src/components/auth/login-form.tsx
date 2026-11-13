@@ -88,7 +88,8 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
               </Button>
             </form>
             <p className="text-xs text-muted-foreground">
-              Demo seed: codice <strong>IT-9482</strong>, studente es. Marco Rossi.
+              Serve essere già nel roster della classe. Demo seed: codice{" "}
+              <strong>IT-9482</strong>, studente es. Marco Rossi.
             </p>
           </TabsContent>
           <TabsContent value="email" className="space-y-4 pt-4">

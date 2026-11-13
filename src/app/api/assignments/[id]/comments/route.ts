@@ -18,12 +18,14 @@ export async function POST(
 
   const assignment = await prisma.ticketAssignment.findUnique({
     where: { id },
-    include: { ticket: true },
+    include: { ticket: { include: { classroom: true } } },
   });
   if (!assignment) return jsonError("Assignment non trovato", 404);
 
   const isAssignee = assignment.assigneeId === user.id;
-  const isTeacher = assignment.ticket.createdById === user.id;
+  const isTeacher =
+    assignment.ticket.createdById === user.id ||
+    assignment.ticket.classroom.ownerId === user.id;
   if (!isAssignee && !isTeacher) return jsonError("Permesso negato", 403);
 
   const body = await req.json().catch(() => null);

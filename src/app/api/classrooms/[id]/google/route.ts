@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApiUser, jsonError } from "@/lib/api";
-import { auth, isGoogleAuthEnabled } from "@/lib/auth";
+import { isGoogleAuthEnabled } from "@/lib/auth";
 
 export async function POST(
   _req: Request,
@@ -24,16 +24,20 @@ export async function POST(
     });
   }
 
-  const session = await auth();
-  if (!session?.googleAccessToken) {
+  // Tokens stay server-side in the Account table — never returned to the browser.
+  const googleAccount = await prisma.account.findFirst({
+    where: { userId: user.id, provider: "google" },
+    select: { access_token: true },
+  });
+
+  if (!googleAccount?.access_token) {
     return NextResponse.json({
       status: "needs_reauth",
       message:
-        "Accedi con Google (permessi Classroom) per collegare i corsi. OAuth predisposto: lo sync roster verrà abilitato quando il token Classroom è disponibile.",
+        "Accedi con Google (permessi Classroom) per collegare i corsi. Il token OAuth resta solo lato server.",
     });
   }
 
-  // Predisposizione: salva un placeholder course id dimostrativo
   const updated = await prisma.classroom.update({
     where: { id },
     data: { googleCourseId: classroom.googleCourseId || `gc-pending-${id.slice(0, 6)}` },

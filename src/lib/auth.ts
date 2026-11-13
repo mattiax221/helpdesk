@@ -6,10 +6,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-
-if (!process.env.AUTH_SECRET) {
-  process.env.AUTH_SECRET = "helpdesk-lab-sample-secret";
-}
+import { teacherEmailAllowlist } from "@/lib/authz";
 
 const classLoginSchema = z.object({
   mode: z.literal("class"),
@@ -109,38 +106,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const lastName = parsed.data.lastName.trim();
         const displayName = `${firstName} ${lastName}`;
 
-        let user = await prisma.user.findFirst({
+        // Only existing roster members can join — no open self-registration.
+        const user = await prisma.user.findFirst({
           where: {
+            role: "STUDENT",
             firstName: { equals: firstName },
             lastName: { equals: lastName },
             memberships: { some: { classroomId: classroom.id } },
           },
         });
-
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              firstName,
-              lastName,
-              name: displayName,
-              role: "STUDENT",
-              memberships: {
-                create: { classroomId: classroom.id },
-              },
-            },
-          });
-        } else {
-          await prisma.classroomMembership.upsert({
-            where: {
-              classroomId_userId: {
-                classroomId: classroom.id,
-                userId: user.id,
-              },
-            },
-            update: {},
-            create: { classroomId: classroom.id, userId: user.id },
-          });
-        }
+        if (!user) return null;
 
         return {
           id: user.id,
@@ -158,29 +133,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id;
         token.role = (user as { role?: Role }).role ?? "STUDENT";
       }
+
       if (account?.provider === "google" && token.email) {
-        const dbUser = await prisma.user.findUnique({ where: { email: token.email } });
+        const email = String(token.email).toLowerCase();
+        const dbUser = await prisma.user.findUnique({ where: { email } });
         if (dbUser) {
           token.id = dbUser.id;
           token.role = dbUser.role;
         } else if (token.id) {
+          // New Google users stay STUDENT unless explicitly allowlisted as teachers.
+          const allow = teacherEmailAllowlist();
+          const role: Role = allow.has(email) ? "TEACHER" : "STUDENT";
           await prisma.user.update({
             where: { id: token.id as string },
-            data: { role: "TEACHER" },
+            data: { role, email },
           });
-          token.role = "TEACHER";
+          token.role = role;
         }
       }
-      if (account?.access_token) {
-        token.googleAccessToken = account.access_token;
-      }
+
+      // OAuth access tokens stay in the Account table — never on the JWT/session.
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = (token.role as Role) || "STUDENT";
-        session.googleAccessToken = token.googleAccessToken as string | undefined;
       }
       return session;
     },

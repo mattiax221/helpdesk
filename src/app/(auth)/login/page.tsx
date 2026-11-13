@@ -1,10 +1,8 @@
 import { Headphones } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
 import { isGoogleAuthEnabled } from "@/lib/auth";
-import { ensureSeeded } from "@/lib/ensure-seed";
 
-export default async function LoginPage() {
-  await ensureSeeded();
+export default function LoginPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_20%_20%,#ccfbf1_0%,transparent_40%),radial-gradient(circle_at_80%_0%,#fef3c7_0%,transparent_35%),linear-gradient(180deg,#f8fafc,#e2e8f0)] dark:bg-[radial-gradient(circle_at_20%_20%,#134e4a55_0%,transparent_40%),linear-gradient(180deg,#020617,#0f172a)]">
       <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-10 px-4 py-10 lg:grid-cols-2">

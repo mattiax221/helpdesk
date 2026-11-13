@@ -111,18 +111,17 @@ export function TerminalGame() {
   async function next() {
     if (index >= CHALLENGES.length - 1) {
       setDone(true);
-      const xpEarned = Math.max(10, Math.floor(score / 5));
-      await fetch("/api/games/score", {
+      const res = await fetch("/api/games/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           gameKey: "terminal",
           score,
-          xpEarned,
           meta: { answered: CHALLENGES.length },
         }),
       });
-      toast.success(`Sfida completata · ${score} punti · +${xpEarned} XP`);
+      const data = await res.json().catch(() => ({}));
+      toast.success(`Sfida completata · ${score} punti · +${data.xpEarned ?? 0} XP`);
       return;
     }
     setIndex((i) => i + 1);

@@ -8,6 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CATEGORY_LABELS, PRIORITY_LABELS, STATUS_LABELS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { AddStudentForm } from "@/components/teacher/add-student-form";
 
 export default async function ClassroomDetailPage({
   params,
@@ -72,11 +73,13 @@ export default async function ClassroomDetailPage({
           <CardHeader>
             <CardTitle className="text-base">Studenti ({students.length})</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-4">
+            <AddStudentForm classroomId={classroom.id} />
+            <p className="text-xs text-muted-foreground">
+              Aggiungi gli studenti al roster, poi condividono il codice {classroom.code} per entrare.
+            </p>
             {students.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                Nessuno studente ancora. Condividi il codice {classroom.code}.
-              </p>
+              <p className="text-sm text-muted-foreground">Nessuno studente nel roster.</p>
             )}
             {students.map((m) => (
               <div

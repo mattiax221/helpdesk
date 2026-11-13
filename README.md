@@ -39,14 +39,18 @@ La classe seed è **3ª Operatore Informatico - Lab Reti** con 5 ticket già ass
 
 Vedi [`.env.example`](.env.example).
 
-- `AUTH_SECRET` — obbligatorio in produzione
+- `AUTH_SECRET` — **obbligatorio** (nessun fallback nel codice)
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — abilita login Google e predispone scope Classroom:
   - `https://www.googleapis.com/auth/classroom.courses.readonly`
   - `https://www.googleapis.com/auth/classroom.rosters.readonly`
+- `TEACHER_EMAIL_ALLOWLIST` — email (separate da virgola) che possono diventare docenti al primo login Google; altrimenti restano studenti
 - `AI_PROVIDER` — `mock` (default), `openai` o `gemini`
 - `OPENAI_API_KEY` / `GEMINI_API_KEY` + `AI_MODEL`
 
 Senza chiavi AI l’endpoint `/api/generate-ticket` usa un generatore locale di scenari realistici.
+
+Il seed demo (`npm run db:seed`) è solo locale/manuale: non parte in automatico a runtime.
+L’accesso con Codice Classe richiede che lo studente sia già nel roster della classe.
 
 ## Flussi principali
 
