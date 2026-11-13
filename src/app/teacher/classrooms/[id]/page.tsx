@@ -167,7 +167,10 @@ export default async function ClassroomDetailPage({
             )}
             {classroom.labTasks.map((t) => {
               const done = t.submissions.filter((s) => s.status === "COMPLETED").length;
+              const pending = t.submissions.length - done;
               const game = getLabGame(t.gameKey);
+              const overdue =
+                Boolean(t.dueAt) && t.dueAt!.getTime() < Date.now() && pending > 0;
               return (
                 <div
                   key={t.id}
@@ -177,9 +180,16 @@ export default async function ClassroomDetailPage({
                     <p className="font-medium">{t.title}</p>
                     <p className="text-xs text-muted-foreground">
                       {game?.title || t.gameKey} · min {t.minScore}
+                      {t.dueAt
+                        ? ` · scad. ${t.dueAt.toLocaleString("it-IT", {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })}`
+                        : ""}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    {overdue && <Badge variant="destructive">Scaduto · {pending} in ritardo</Badge>}
                     <Badge variant="secondary">
                       {done}/{t.submissions.length} consegnati
                     </Badge>

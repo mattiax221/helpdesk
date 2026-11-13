@@ -233,24 +233,29 @@ async function main() {
       title: "Compito: Crimpatura T568B",
       instructions: "Completa almeno una crimpatura T568B corretta entro il tempo. Punteggio minimo 60.",
       minScore: 60,
+      // Scaduto: utile per demo Notifiche → «Controlla ora»
+      dueAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
     },
     {
       gameKey: "ports",
       title: "Compito: Porte firewall",
       instructions: "Abbina correttamente porte e servizi. Serve per la lezione di sicurezza.",
       minScore: 55,
+      dueAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
     },
     {
       gameKey: "osi",
       title: "Compito: Livelli OSI",
       instructions: "Collega protocolli/dispositivi al livello OSI corretto.",
       minScore: 55,
+      dueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     },
     {
       gameKey: "wifi",
       title: "Compito: Sicurezza Wi‑Fi",
       instructions: "Ordina gli standard e rispondi alle domande sulle best practice scolastiche.",
       minScore: 50,
+      dueAt: null as Date | null,
     },
   ];
 
@@ -263,6 +268,7 @@ async function main() {
         title: lab.title,
         instructions: lab.instructions,
         minScore: lab.minScore,
+        dueAt: lab.dueAt,
         submissions: {
           create: students.map((s) => ({ userId: s.id, status: "ASSIGNED" })),
         },
@@ -339,7 +345,15 @@ async function main() {
       description: "Ambiente cloud condiviso per la classe (Vercel + Supabase Postgres).",
       category: "Piattaforma",
       priority: "HIGH" as const,
-      status: "IN_PROGRESS" as const,
+      status: "DONE" as const,
+    },
+    {
+      title: "Email scadenze via Gmail Workspace",
+      description:
+        "Avvisi docente se Lab/SLA scaduti; invio dal Gmail istituzionale (dominio scuola), non da provider esterni.",
+      category: "Docente",
+      priority: "HIGH" as const,
+      status: "DONE" as const,
     },
   ];
 
@@ -350,6 +364,7 @@ async function main() {
   console.log("Studenti: Codice Classe IT-9482 + Nome/Cognome (es. Marco Rossi)");
   console.log("Oppure login email studente / demo1234");
   console.log("Roadmap: /roadmap");
+  console.log("Notifiche scadenze: /teacher/notifications (Compito RJ45 è già scaduto in seed)");
 }
 
 main()
