@@ -18,83 +18,143 @@ const CHALLENGES: Challenge[] = [
     id: "subnet",
     prompt: "Qual è l'errore di configurazione?",
     scenario:
-      "Host: 192.168.10.50/24\nGateway: 192.168.1.1\nDNS: 8.8.8.8\nSintomo: non naviga, ping al gateway fallisce.",
+      "Host: 192.168.10.50/24\nGateway: 192.168.1.1\nDNS: 8.8.8.8\nSintomo: non naviga, ping gateway fallisce.",
     options: [
       {
         id: "a",
-        label: "Gateway fuori subnet (dovrebbe essere 192.168.10.x)",
+        label: "Gateway fuori subnet (serve 192.168.10.x)",
         correct: true,
-        explain: "Con /24 l'host è in 192.168.10.0/24, il gateway 192.168.1.1 non è raggiungibile in L2/L3 locale.",
+        explain: "Con /24 l'host è in 192.168.10.0/24: 192.168.1.1 non è locale.",
       },
-      {
-        id: "b",
-        label: "DNS 8.8.8.8 non è valido",
-        correct: false,
-        explain: "8.8.8.8 è valido; il problema è la reachability del gateway.",
-      },
-      {
-        id: "c",
-        label: "Serve per forza IPv6",
-        correct: false,
-        explain: "Non è richiesto IPv6 per questo scenario.",
-      },
+      { id: "b", label: "DNS 8.8.8.8 non è valido", correct: false, explain: "DNS ok; manca reachability gateway." },
+      { id: "c", label: "Serve per forza IPv6", correct: false, explain: "IPv6 non è richiesto qui." },
     ],
   },
   {
     id: "cmd-dns",
-    prompt: "Quale comando usi per interrogare un record DNS?",
-    scenario: "Windows client · sospetto problema di risoluzione nomi.",
+    prompt: "Quale comando interrogare un record DNS?",
+    scenario: "Windows · sospetto problema risoluzione nomi.",
     options: [
-      { id: "a", label: "ipconfig", correct: false, explain: "Mostra la config IP, non interroga DNS." },
-      { id: "b", label: "nslookup", correct: true, explain: "nslookup interroga i record DNS." },
-      { id: "c", label: "chmod", correct: false, explain: "chmod è Unix per i permessi file." },
+      { id: "a", label: "ipconfig", correct: false, explain: "Mostra config IP, non interroga DNS." },
+      { id: "b", label: "nslookup", correct: true, explain: "nslookup interroga i DNS." },
+      { id: "c", label: "chmod", correct: false, explain: "chmod è Unix per i permessi." },
     ],
   },
   {
     id: "cmd-path",
-    prompt: "Quale comando mostra il percorso dei router fino a destinazione?",
+    prompt: "Quale comando mostra gli hop fino a destinazione?",
     scenario: "Timeout intermittenti verso un server remoto.",
     options: [
       { id: "a", label: "tracert", correct: true, explain: "tracert/traceroute mostra gli hop." },
-      { id: "b", label: "ping", correct: false, explain: "ping testa reachability, non l'intero percorso." },
-      { id: "c", label: "ipconfig /all", correct: false, explain: "Mostra solo configurazione locale." },
+      { id: "b", label: "ping", correct: false, explain: "ping testa solo reachability." },
+      { id: "c", label: "ipconfig /all", correct: false, explain: "Solo configurazione locale." },
     ],
   },
   {
     id: "mask",
     prompt: "Host e server possono comunicare?",
-    scenario: "PC 10.0.0.20 mask 255.255.255.0\nServer 10.0.1.20 mask 255.255.255.0\nGateway assente.",
+    scenario: "PC 10.0.0.20/24\nServer 10.0.1.20/24\nNessun gateway.",
     options: [
       {
         id: "a",
-        label: "No, sono su subnet diverse senza routing",
+        label: "No, subnet diverse senza routing",
         correct: true,
-        explain: "10.0.0.0/24 e 10.0.1.0/24 richiedono un gateway/router.",
+        explain: "10.0.0.0/24 e 10.0.1.0/24 richiedono un router.",
       },
+      { id: "b", label: "Sì, stesso Class A", correct: false, explain: "Conta la mask, non la classe storica." },
+      { id: "c", label: "Sì, basta un ping", correct: false, explain: "Senza routing il ping fallisce." },
+    ],
+  },
+  {
+    id: "apipa",
+    prompt: "Cosa indica 169.254.x.x?",
+    scenario: "ipconfig → Autoconfiguration IPv4 169.254.12.8\nGateway assente",
+    options: [
       {
-        id: "b",
-        label: "Sì, stesso Class A quindi ok",
-        correct: false,
-        explain: "La classe non basta: conta la subnet mask configurata.",
+        id: "a",
+        label: "APIPA: DHCP non ha risposto",
+        correct: true,
+        explain: "169.254/16 è link-local Windows quando il DHCP fallisce.",
       },
+      { id: "b", label: "IP pubblico CGNAT", correct: false, explain: "Non è uno spazio pubblico tipico client." },
+      { id: "c", label: "Indirizzo loopback", correct: false, explain: "Loopback è 127.0.0.1." },
+    ],
+  },
+  {
+    id: "chmod",
+    prompt: "Quale comando rende eseguibile uno script Linux?",
+    scenario: "file: backup.sh · permission denied quando lo lanci",
+    options: [
+      { id: "a", label: "chmod +x backup.sh", correct: true, explain: "Aggiunge permesso execute." },
+      { id: "b", label: "ping backup.sh", correct: false, explain: "ping non cambia permessi." },
+      { id: "c", label: "ipconfig /renew", correct: false, explain: "Comando Windows rete." },
+    ],
+  },
+  {
+    id: "dns-vs-ip",
+    prompt: "Naviga per IP ma non per nome. Primo check?",
+    scenario: "ping 8.8.8.8 OK\nping google.com FAIL",
+    options: [
+      { id: "a", label: "Problema DNS / resolver", correct: true, explain: "Connettività L3 ok, risoluzione nomi no." },
+      { id: "b", label: "Cavo ethernet rotto", correct: false, explain: "Il ping IP funzionerebbe comunque?" },
+      { id: "c", label: "Alimentatore sottodimensionato", correct: false, explain: "Non spiega questo pattern." },
+    ],
+  },
+  {
+    id: "cidr",
+    prompt: "Quanti host utili in /28?",
+    scenario: "VLAN lab docenti · mask proposta 255.255.255.240",
+    options: [
+      { id: "a", label: "14", correct: true, explain: "2^(32-28)-2 = 14 host utili." },
+      { id: "b", label: "16", correct: false, explain: "16 indirizzi totali, meno rete/broadcast." },
+      { id: "c", label: "30", correct: false, explain: "30 è tipico di /27." },
+    ],
+  },
+  {
+    id: "default-route",
+    prompt: "Quale manca se ping LAN ok ma Internet no?",
+    scenario: "ping 192.168.1.10 OK\nping 1.1.1.1 FAIL\nroute print: no 0.0.0.0",
+    options: [
+      { id: "a", label: "Default gateway / rotta di default", correct: true, explain: "Senza 0.0.0.0 non esci dalla LAN." },
+      { id: "b", label: "Driver stampante", correct: false, explain: "Irrilevante." },
+      { id: "c", label: "Licenza Office", correct: false, explain: "Irrilevante." },
+    ],
+  },
+  {
+    id: "duplex",
+    prompt: "Sintomo tipico di mismatch duplex?",
+    scenario: "Link up, ping con perdita altissima, collisioni elevate sullo switch",
+    options: [
       {
-        id: "c",
-        label: "Sì, basta un ping",
-        correct: false,
-        explain: "Senza routing il ping fallirà.",
+        id: "a",
+        label: "Half/Full duplex mismatch",
+        correct: true,
+        explain: "Classico: throughput misero e errori CRC/collision.",
       },
+      { id: "b", label: "DNS cache piena", correct: false, explain: "Non causa collisioni L2." },
+      { id: "c", label: "Certificato TLS scaduto", correct: false, explain: "È un problema applicativo HTTPS." },
     ],
   },
 ];
 
+function shuffle<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 export function TerminalGame() {
+  const [deck] = useState(() => shuffle(CHALLENGES).slice(0, 8));
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
 
-  const challenge = CHALLENGES[index];
-  const progress = useMemo(() => `${index + 1}/${CHALLENGES.length}`, [index]);
+  const challenge = deck[index];
+  const progress = useMemo(() => `${index + 1}/${deck.length}`, [index, deck.length]);
 
   async function answer(optionId: string) {
     if (selected) return;
@@ -109,7 +169,7 @@ export function TerminalGame() {
   }
 
   async function next() {
-    if (index >= CHALLENGES.length - 1) {
+    if (index >= deck.length - 1) {
       setDone(true);
       const res = await fetch("/api/games/score", {
         method: "POST",
@@ -117,7 +177,7 @@ export function TerminalGame() {
         body: JSON.stringify({
           gameKey: "terminal",
           score,
-          meta: { answered: CHALLENGES.length },
+          meta: { answered: deck.length },
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -142,12 +202,12 @@ export function TerminalGame() {
         <Badge variant="outline">Score {score}</Badge>
       </div>
 
-      <div className="overflow-hidden rounded-xl border bg-slate-950 text-slate-100">
+      <div className="overflow-hidden rounded-xl border bg-slate-950 text-slate-100 shadow-inner">
         <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2 text-xs text-slate-400">
           <span className="size-2 rounded-full bg-rose-500" />
           <span className="size-2 rounded-full bg-amber-400" />
           <span className="size-2 rounded-full bg-emerald-500" />
-          <span className="ml-2">helpdesk@lab:~</span>
+          <span className="ml-2 font-mono">helpdesk@lab:~$</span>
         </div>
         <pre className="whitespace-pre-wrap p-4 font-mono text-xs leading-relaxed text-emerald-300">
           {challenge.scenario}
@@ -181,11 +241,11 @@ export function TerminalGame() {
 
       <div className="flex gap-2">
         {!done ? (
-          <Button onClick={next} disabled={!selected} className="bg-teal-700 hover:bg-teal-800">
-            {index >= CHALLENGES.length - 1 ? "Termina" : "Prossima sfida"}
+          <Button type="button" onClick={next} disabled={!selected} className="bg-teal-700 hover:bg-teal-800">
+            {index >= deck.length - 1 ? "Termina" : "Prossima sfida"}
           </Button>
         ) : (
-          <Button onClick={reset} variant="outline">
+          <Button type="button" onClick={reset} variant="outline">
             Rigioca
           </Button>
         )}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiUser, jsonError } from "@/lib/api";
+import { redactTicketForViewer } from "@/lib/ticket-privacy";
 
 const patchSchema = z.object({
   name: z.string().min(3).optional(),
@@ -52,12 +53,20 @@ export async function GET(
 
   if (!classroom) return jsonError("Classe non trovata", 404);
 
-  const allowed =
-    classroom.ownerId === user.id ||
-    classroom.memberships.some((m) => m.userId === user.id);
-  if (!allowed) return jsonError("Permesso negato", 403);
+  const isOwner = classroom.ownerId === user.id;
+  const isMember = classroom.memberships.some((m) => m.userId === user.id);
+  if (!isOwner && !isMember) return jsonError("Permesso negato", 403);
 
-  return NextResponse.json({ classroom });
+  const tickets = classroom.tickets.map((ticket) =>
+    redactTicketForViewer(ticket, isOwner),
+  );
+
+  return NextResponse.json({
+    classroom: {
+      ...classroom,
+      tickets,
+    },
+  });
 }
 
 export async function PATCH(

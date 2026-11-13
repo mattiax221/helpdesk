@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +43,9 @@ export function TicketForm({
   const [classroomId, setClassroomId] = useState(defaultClassroomId || classrooms[0]?.id || "");
   const [assignTo, setAssignTo] = useState<"all" | "selected">("all");
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [catalog, setCatalog] = useState<
+    { id: number; title: string; category: string; difficulty: string; priority: string }[]
+  >([]);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -55,6 +58,40 @@ export function TicketForm({
     clientHints: "Indizio 1\nIndizio 2\nIndizio 3",
     theme: "",
   });
+
+  useEffect(() => {
+    fetch("/api/scenarios")
+      .then((r) => r.json())
+      .then((d) => setCatalog(d.scenarios || []))
+      .catch(() => undefined);
+  }, []);
+
+  function applyTicket(t: {
+    title: string;
+    description: string;
+    category: string;
+    priority: string;
+    difficulty: string;
+    slaMinutes: number;
+    secretNotes: string;
+    fakeLogs: { name: string; content: string }[];
+    clientHints: string[];
+  }) {
+    setForm((prev) => ({
+      ...prev,
+      title: t.title,
+      description: t.description,
+      category: t.category,
+      priority: t.priority,
+      difficulty: t.difficulty,
+      slaMinutes: t.slaMinutes,
+      secretNotes: t.secretNotes,
+      fakeLogs: (t.fakeLogs || [])
+        .map((l) => `### ${l.name}\n${l.content}`)
+        .join("\n\n"),
+      clientHints: (t.clientHints || []).join("\n"),
+    }));
+  }
 
   const students = useMemo(
     () => classrooms.find((c) => c.id === classroomId)?.students || [],
@@ -82,22 +119,31 @@ export function TicketForm({
       return;
     }
     const data = await res.json();
-    const t = data.ticket;
-    setForm((prev) => ({
-      ...prev,
-      title: t.title,
-      description: t.description,
-      category: t.category,
-      priority: t.priority,
-      difficulty: t.difficulty,
-      slaMinutes: t.slaMinutes,
-      secretNotes: t.secretNotes,
-      fakeLogs: (t.fakeLogs || [])
-        .map((l: { name: string; content: string }) => `### ${l.name}\n${l.content}`)
-        .join("\n\n"),
-      clientHints: (t.clientHints || []).join("\n"),
-    }));
-    toast.success(data.source === "mock" ? "Ticket generato (mock locale)" : "Ticket generato con AI");
+    applyTicket(data.ticket);
+    toast.success(
+      data.source === "mock"
+        ? `Scenario dal catalogo locale (${data.bankSize} disponibili)`
+        : data.source === "catalog"
+          ? "Scenario caricato dal catalogo"
+          : "Ticket generato con AI",
+    );
+  }
+
+  async function loadScenario(id: number) {
+    setAiLoading(true);
+    const res = await fetch("/api/generate-ticket", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scenarioId: id }),
+    });
+    setAiLoading(false);
+    if (!res.ok) {
+      toast.error("Scenario non caricabile");
+      return;
+    }
+    const data = await res.json();
+    applyTicket(data.ticket);
+    toast.success("Scenario pronto da assegnare");
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -220,6 +266,7 @@ export function TicketForm({
         <TabsList>
           <TabsTrigger value="manual">Manuale</TabsTrigger>
           <TabsTrigger value="ai">Generatore AI</TabsTrigger>
+          <TabsTrigger value="catalog">Catalogo scenari</TabsTrigger>
         </TabsList>
         <TabsContent value="ai" className="space-y-4 pt-4">
           <Card>
@@ -229,7 +276,7 @@ export function TicketForm({
                 Genera scenario realistico
               </CardTitle>
               <CardDescription>
-                Senza API key viene usato un generatore mock locale. Con OpenAI/Gemini compila il ticket completo.
+                Catalogo locale ricco di default; con OpenAI/Gemini genera varianti uniche sul tema.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3 md:grid-cols-3">
@@ -271,7 +318,7 @@ export function TicketForm({
                 <Input
                   value={form.theme}
                   onChange={(e) => update("theme", e.target.value)}
-                  placeholder="es. laboratorio Wi-Fi"
+                  placeholder="es. open day / ransomware / VPN"
                 />
               </div>
               <Button
@@ -280,8 +327,37 @@ export function TicketForm({
                 onClick={generateAi}
                 disabled={aiLoading}
               >
-                {aiLoading ? "Generazione..." : "Genera ticket AI"}
+                {aiLoading ? "Generazione..." : "Genera ticket casuale / AI"}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="catalog" className="space-y-4 pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Library className="size-4 text-teal-700" />
+                Banca scenari ({catalog.length})
+              </CardTitle>
+              <CardDescription>
+                Scegli uno scenario pronto: sintomi vaghi, log e soluzione nascosta già compilati.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid max-h-[360px] gap-2 overflow-y-auto sm:grid-cols-2">
+              {catalog.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  disabled={aiLoading}
+                  onClick={() => loadScenario(s.id)}
+                  className="rounded-md border px-3 py-2 text-left text-sm transition hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/30"
+                >
+                  <p className="font-medium leading-snug">{s.title}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {s.category} · {s.difficulty} · {s.priority}
+                  </p>
+                </button>
+              ))}
             </CardContent>
           </Card>
         </TabsContent>

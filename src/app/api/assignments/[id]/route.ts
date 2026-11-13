@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiUser, jsonError } from "@/lib/api";
 import { canManageAssignment } from "@/lib/authz";
+import { redactAssignmentTree } from "@/lib/ticket-privacy";
 import type { TicketStatus } from "@prisma/client";
 
 const patchSchema = z.object({
@@ -135,5 +136,7 @@ export async function PATCH(
     },
   });
 
-  return NextResponse.json({ assignment: updated });
+  return NextResponse.json({
+    assignment: redactAssignmentTree(updated, isOwnerTeacher),
+  });
 }

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Standard = "T568A" | "T568B";
+type Standard = "T568A" | "T568B" | "CROSSOVER";
 
 const COLORS: { id: string; label: string; color: string; stripe?: string }[] = [
   { id: "GW", label: "Bianco/Verde", color: "#d9f99d", stripe: "#16a34a" },
@@ -19,9 +19,11 @@ const COLORS: { id: string; label: string; color: string; stripe?: string }[] = 
   { id: "Br", label: "Marrone", color: "#a16207" },
 ];
 
+// Crossover tipico 1-3 / 2-6 rispetto a T568B
 const STANDARDS: Record<Standard, string[]> = {
   T568A: ["GW", "G", "OW", "B", "BW", "O", "BrW", "Br"],
   T568B: ["OW", "O", "GW", "B", "BW", "G", "BrW", "Br"],
+  CROSSOVER: ["GW", "G", "OW", "B", "BW", "O", "BrW", "Br"],
 };
 
 function shuffle<T>(arr: T[]): T[] {
@@ -110,21 +112,26 @@ export function Rj45Game() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" variant={standard === "T568A" && running ? "default" : "outline"} onClick={() => start("T568A")}>
-          Avvia T568A
+        <Button type="button" size="sm" variant={standard === "T568A" && running ? "default" : "outline"} onClick={() => start("T568A")}>
+          T568A
         </Button>
-        <Button size="sm" variant={standard === "T568B" && running ? "default" : "outline"} onClick={() => start("T568B")}>
-          Avvia T568B
+        <Button type="button" size="sm" variant={standard === "T568B" && running ? "default" : "outline"} onClick={() => start("T568B")}>
+          T568B
+        </Button>
+        <Button type="button" size="sm" variant={standard === "CROSSOVER" && running ? "default" : "outline"} onClick={() => start("CROSSOVER")}>
+          Crossover
         </Button>
         <Badge variant={seconds < 15 ? "destructive" : "secondary"}>⏱ {seconds}s</Badge>
         <Badge variant="outline">
-          Corretti {correctCount}/8 · {standard}
+          Corretti {correctCount}/8 · {standard === "CROSSOVER" ? "Cross (vs T568B)" : standard}
         </Badge>
       </div>
 
       <div className="rounded-xl border bg-slate-950 p-4 text-white">
         <p className="mb-3 text-xs uppercase tracking-wide text-slate-400">
-          Connettore RJ45 — clicca due fili per scambiarli
+          {standard === "CROSSOVER"
+            ? "Altro capo fissato T568B — crimpa questo capo a standard A (crossover)"
+            : "Connettore RJ45 — clicca due fili per scambiarli"}
         </p>
         <div className="grid grid-cols-8 gap-2">
           {order.map((id, index) => {

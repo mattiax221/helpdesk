@@ -106,4 +106,4 @@ Lo schema evita tipi SQLite-only: gli array/JSON sono salvati come stringhe seri
 
 ## Note didattiche
 
-HelpDesk Lab è pensato per esercitazioni in laboratorio: i ticket del seed coprono conflitto IP, bootloop post-update, stampante di rete, phishing e surriscaldamento hardware.
+HelpDesk Lab è pensato per esercitazioni in laboratorio. Il catalogo scenari include decine di casi (reti, SO, Office, sicurezza, hardware). In **Lab** trovi crimpatura RJ45/crossover, quiz terminale e **Port Strike**.

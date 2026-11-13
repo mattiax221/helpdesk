@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApiUser } from "@/lib/api";
+import { redactAssignmentTree } from "@/lib/ticket-privacy";
 
 export async function GET(req: Request) {
   const { user, error } = await requireApiUser();
@@ -17,7 +18,19 @@ export async function GET(req: Request) {
       },
       include: {
         ticket: {
-          include: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            category: true,
+            priority: true,
+            difficulty: true,
+            slaMinutes: true,
+            fakeLogs: true,
+            attachmentsMeta: true,
+            classroomId: true,
+            createdAt: true,
+            updatedAt: true,
             classroom: { select: { id: true, name: true, code: true } },
           },
         },
@@ -25,13 +38,15 @@ export async function GET(req: Request) {
       },
       orderBy: { updatedAt: "desc" },
     });
-    return NextResponse.json({ assignments });
+    return NextResponse.json({
+      assignments: assignments.map((a) => redactAssignmentTree(a, false)),
+    });
   }
 
   const assignments = await prisma.ticketAssignment.findMany({
     where: {
       ticket: {
-        createdById: user.id,
+        OR: [{ createdById: user.id }, { classroom: { ownerId: user.id } }],
         ...(classroomId ? { classroomId } : {}),
       },
     },
