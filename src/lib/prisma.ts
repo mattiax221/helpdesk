@@ -6,7 +6,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 // Bump when Prisma models change so hot reload drops a stale client singleton.
-const SCHEMA_VERSION = "lab-tasks-v1";
+const SCHEMA_VERSION = "roadmap-v1";
 
 function createPrismaClient() {
   return new PrismaClient({
@@ -14,12 +14,18 @@ function createPrismaClient() {
   });
 }
 
+function hasModel(client: PrismaClient, key: string) {
+  const model = (client as unknown as Record<string, { findMany?: unknown }>)[key];
+  return typeof model?.findMany === "function";
+}
+
 function getPrisma(): PrismaClient {
   const cached = globalForPrisma.prisma;
   const stale =
     !cached ||
     globalForPrisma.prismaSchemaVersion !== SCHEMA_VERSION ||
-    typeof (cached as { labTask?: unknown }).labTask?.findMany !== "function";
+    !hasModel(cached, "labTask") ||
+    !hasModel(cached, "roadmapItem");
 
   if (stale) {
     if (cached) {

@@ -292,3 +292,28 @@ model LabTaskSubmission {
 
   @@unique([taskId, userId])
 }
+
+enum RoadmapStatus {
+  IDEA
+  PLANNED
+  IN_PROGRESS
+  DONE
+}
+
+enum RoadmapPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model RoadmapItem {
+  id          String          @id @default(cuid())
+  title       String
+  description String          @default("")
+  status      RoadmapStatus   @default(IDEA)
+  priority    RoadmapPriority @default(MEDIUM)
+  category    String          @default("Generale")
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}

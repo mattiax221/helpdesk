@@ -11,6 +11,7 @@ import {
   Gamepad2,
   LogOut,
   ClipboardCheck,
+  ListTodo,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -39,10 +40,12 @@ export function AppShell({
     { href: "/teacher/tickets/new", label: t("nav_new_ticket"), icon: Ticket },
     { href: "/teacher/review", label: t("nav_review"), icon: ClipboardCheck },
     { href: "/lab", label: t("nav_lab"), icon: Gamepad2 },
+    { href: "/roadmap", label: t("nav_roadmap"), icon: ListTodo },
   ];
   const studentNav: NavItem[] = [
     { href: "/student", label: t("nav_board"), icon: LayoutDashboard },
     { href: "/lab", label: t("nav_lab"), icon: Gamepad2 },
+    { href: "/roadmap", label: t("nav_roadmap"), icon: ListTodo },
   ];
   const nav = role === "TEACHER" ? teacherNav : studentNav;
   const initials = userName

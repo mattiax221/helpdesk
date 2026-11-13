@@ -72,6 +72,11 @@ L’accesso con Codice Classe richiede che lo studente sia già nel roster della
 4. Sezione **Compiti Lab**: esercizi assegnati dal docente (RJ45, terminal, porte, subnet, OSI, CLI, Wi‑Fi). Ogni mini-game è un compito con punteggio minimo e consegna.
 5. Toggle lingua **IT/EN** nell’header per laboratori bilingue.
 
+### Roadmap funzioni
+
+Pagina pubblica `/roadmap`: backlog visuale (Idee → Piano → In corso → Fatto).  
+Il docente può aggiungere card e farle avanzare.
+
 ### Smoke test
 
 Con il server avviato:
@@ -79,6 +84,10 @@ Con il server avviato:
 ```bash
 npm run smoke
 ```
+
+## Deploy su Vercel
+
+Vedi [DEPLOY.md](./DEPLOY.md): serve PostgreSQL (Neon/Supabase), `AUTH_SECRET`, `AUTH_URL`.
 
 ## Migrazione a PostgreSQL / Supabase
 
