@@ -1,8 +1,12 @@
 # HelpDesk Lab
 
+**Versione:** `0.1.0` (beta) — vedi [docs/VERSIONING.md](./docs/VERSIONING.md) · [CHANGELOG](./CHANGELOG.md) · [Documentazione](./docs/00-INDICE.md)
+
 Simulatore educativo di ticketing aziendale (stile Jira Service Management) per scuole superiori — indirizzo **Tecnico / Operatore Informatico**.
 
 Gli studenti lavorano come tecnici Help Desk L1/L2 su una board Kanban, dialogano con un “cliente” simulato e chiudono i ticket con causa root, procedura e test finale. I docenti creano classi, generano ticket (manuale o AI), assegnano scenari e valutano le diagnosi.
+
+Per testare la build attuale usa la [checklist](./docs/CHECKLIST-TEST.md).
 
 ## Stack
 
