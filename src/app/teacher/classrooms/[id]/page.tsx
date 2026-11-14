@@ -15,6 +15,7 @@ import { LabLeaderboard } from "@/components/teacher/lab-leaderboard";
 import { AssignLabTaskForm } from "@/components/teacher/assign-lab-task-form";
 import { computeClassroomStats } from "@/lib/classroom-stats";
 import { getLabGame } from "@/lib/lab-catalog";
+import { levelForXp } from "@/lib/levels";
 
 export default async function ClassroomDetailPage({
   params,
@@ -221,15 +222,22 @@ export default async function ClassroomDetailPage({
               {students.length === 0 && (
                 <p className="text-sm text-muted-foreground">Nessuno studente nel roster.</p>
               )}
-              {students.map((m) => (
-                <div
-                  key={m.id}
-                  className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
-                >
-                  <span>{m.user.name}</span>
-                  <Badge variant="secondary">{m.user.xp} XP</Badge>
-                </div>
-              ))}
+              {[...students]
+                .sort((a, b) => b.user.xp - a.user.xp)
+                .map((m) => {
+                  const level = levelForXp(m.user.xp);
+                  return (
+                    <div
+                      key={m.id}
+                      className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
+                    >
+                      <span>{m.user.name}</span>
+                      <Badge variant="secondary">
+                        Lv {level.level} · {level.title} · {m.user.xp} XP
+                      </Badge>
+                    </div>
+                  );
+                })}
             </CardContent>
           </Card>
 

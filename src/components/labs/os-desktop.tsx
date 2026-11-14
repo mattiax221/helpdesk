@@ -1,84 +1,28 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Globe, Settings, TerminalSquare, FileText, ScrollText } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { BookOpen, Globe, Settings, TerminalSquare, FileText, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { OS_SCENARIOS, gradeOsReport, type OsGrade, type OsScenario } from "@/lib/os-sim";
+import {
+  OS_SCENARIOS,
+  browserOk,
+  gradeOsReport,
+  initialOsWorld,
+  osActions,
+  withSurprise,
+  type OsGrade,
+  type OsScenario,
+  type OsWorld,
+} from "@/lib/os-sim";
 import { cn } from "@/lib/utils";
 
 type Props = { onComplete: (score: number, meta?: Record<string, unknown>) => void };
 
-type World = {
-  dns: string;
-  proxyOn: boolean;
-  flushed: boolean;
-  resolv: string;
-  checks: Record<string, boolean>;
-};
-
-function initialWorld(s: OsScenario): World {
-  if (s.id === "win-proxy") {
-    return {
-      dns: "10.20.0.2",
-      proxyOn: true,
-      flushed: true,
-      resolv: "nameserver 10.20.0.2\n",
-      checks: {},
-    };
-  }
-  if (s.id === "linux-resolv") {
-    return {
-      dns: "8.8.8.8",
-      proxyOn: false,
-      flushed: false,
-      resolv: "# sovrascritto per errore\nnameserver 8.8.8.8\n",
-      checks: {},
-    };
-  }
-  return {
-    dns: "8.8.8.8",
-    proxyOn: false,
-    flushed: false,
-    resolv: "nameserver 8.8.8.8\n",
-    checks: {},
-  };
-}
-
-function browserOk(s: OsScenario, w: World) {
-  if (s.id === "win-proxy") return !w.proxyOn;
-  if (s.id === "linux-resolv") return /nameserver\s+10\.20\.0\.2/.test(w.resolv);
-  return w.dns.trim() === "10.20.0.2" && w.flushed;
-}
-
-function actionList(s: OsScenario, w: World) {
-  if (s.id === "win-proxy") {
-    return [
-      { id: "ping", label: "Verificare che il ping funzioni", ok: !!w.checks.ping },
-      { id: "proxy-seen", label: "Aprire le impostazioni proxy", ok: !!w.checks.proxySeen },
-      { id: "proxy-off", label: "Disattivare il proxy", ok: !w.proxyOn && !!w.checks.proxySaved },
-      { id: "browser", label: "Ricaricare il sito nel browser", ok: !!w.checks.browser && browserOk(s, w) },
-    ];
-  }
-  if (s.id === "linux-resolv") {
-    return [
-      { id: "cat", label: "Leggere /etc/resolv.conf", ok: !!w.checks.cat },
-      { id: "edit", label: "Impostare nameserver 10.20.0.2 e salvare", ok: !!w.checks.saved && browserOk(s, w) },
-      { id: "curl", label: "Riprovare curl e vedere HTTP 200", ok: !!w.checks.curl && browserOk(s, w) },
-    ];
-  }
-  return [
-    { id: "ipconfig", label: "Leggere la config con ipconfig", ok: !!w.checks.ipconfig },
-    { id: "dns", label: "Impostare DNS 10.20.0.2", ok: w.dns.trim() === "10.20.0.2" && !!w.checks.dnsSaved },
-    { id: "flush", label: "Eseguire ipconfig /flushdns", ok: !!w.checks.flush && w.flushed },
-    { id: "browser", label: "Aprire il sito nel browser", ok: !!w.checks.browser && browserOk(s, w) },
-  ];
-}
-
 export function OsDesktop({ onComplete }: Props) {
   const [scenario, setScenario] = useState<OsScenario | null>(null);
-  const [world, setWorld] = useState<World | null>(null);
+  const [world, setWorld] = useState<OsWorld | null>(null);
   const [app, setApp] = useState<string | null>(null);
   const [log, setLog] = useState<string[]>(["HelpDesk Lab — sessione desktop. Digita help."]);
   const [cmd, setCmd] = useState("");
@@ -87,14 +31,19 @@ export function OsDesktop({ onComplete }: Props) {
   const [dnsDraft, setDnsDraft] = useState("8.8.8.8");
   const [proxyDraft, setProxyDraft] = useState(true);
   const [resolvDraft, setResolvDraft] = useState("");
+  const [hostsDraft, setHostsDraft] = useState("");
+  const [showDocs, setShowDocs] = useState(false);
+  const surpriseSeen = useRef(false);
   const [report, setReport] = useState("");
   const [grade, setGrade] = useState<OsGrade | null>(null);
   const [hintIdx, setHintIdx] = useState(0);
 
   function boot(s: OsScenario) {
-    const w = initialWorld(s);
+    const w = initialOsWorld(s);
+    surpriseSeen.current = false;
     setScenario(s);
     setWorld(w);
+    setShowDocs(false);
     setApp(null);
     setLog(
       s.os === "linux"
@@ -106,14 +55,22 @@ export function OsDesktop({ onComplete }: Props) {
     setDnsDraft(w.dns);
     setProxyDraft(w.proxyOn);
     setResolvDraft(w.resolv);
+    setHostsDraft(w.hosts);
     setReport("");
     setGrade(null);
     setHintIdx(0);
   }
 
-  function patch(fn: (w: World) => World) {
-    setWorld((prev) => (prev ? fn(prev) : prev));
+  function patch(fn: (w: OsWorld) => OsWorld) {
+    setWorld((prev) => (prev && scenario ? withSurprise(scenario, fn(prev)) : prev));
   }
+
+  useEffect(() => {
+    if (!world?.surpriseFired || surpriseSeen.current) return;
+    surpriseSeen.current = true;
+    setHostsDraft(world.hosts);
+    setResolvDraft(world.resolv);
+  }, [world]);
 
   function mark(id: string) {
     patch((w) => ({ ...w, checks: { ...w.checks, [id]: true } }));
@@ -200,9 +157,53 @@ export function OsDesktop({ onComplete }: Props) {
       mark("curl");
       if (browserOk(scenario, world)) {
         push("HTTP/1.1 200 OK\ncontent-type: text/html\nIntranet scuola — home");
+      } else if (scenario.id === "linux-nginx") {
+        push(world.portBlocked ? "curl: (7) Failed to connect to port 80" : "curl: (7) Connection refused");
       } else {
         push("curl: (6) Could not resolve host: intranet.scuola.local");
       }
+      return;
+    }
+    if (scenario.id === "win-hosts" && (c.includes("hosts") || c.startsWith("type "))) {
+      mark("hostsRead");
+      push(world.hosts.trimEnd());
+      return;
+    }
+    if (scenario.id === "linux-nginx" && c.includes("status")) {
+      mark("status");
+      if (world.portBlocked) {
+        push("nginx.service - inactive (dead)");
+        push("nginx[9999]: bind() to 0.0.0.0:80 failed (98: Address already in use)");
+      } else if (world.serviceUp) {
+        push("nginx.service - active (running)");
+      } else {
+        push("nginx.service - inactive (dead)");
+      }
+      return;
+    }
+    if (scenario.id === "linux-nginx" && (c.includes("start nginx") || c === "systemctl start nginx")) {
+      mark("started");
+      if (world.portBlocked) {
+        push("Job for nginx.service failed. Address already in use (pid 9999).");
+        patch((w) => ({ ...w, serviceUp: false, checks: { ...w.checks, started: true } }));
+      } else if (!world.surpriseFired) {
+        push("nginx parte… e ricade subito.");
+        push("nginx[9999]: bind() to 0.0.0.0:80 failed (98: Address already in use)");
+        patch((w) => ({ ...w, serviceUp: false, checks: { ...w.checks, started: true } }));
+      } else {
+        push("nginx.service is now active (running).");
+        patch((w) => ({
+          ...w,
+          serviceUp: true,
+          checks: { ...w.checks, started: true, startedAfter: true },
+        }));
+      }
+      return;
+    }
+    if (scenario.id === "linux-nginx" && (c.includes("kill") || c.includes("9999"))) {
+      mark("killed");
+      push("Processo 9999 terminato. La porta 80 è libera.");
+      patch((w) => ({ ...w, portBlocked: false, checks: { ...w.checks, killed: true } }));
       return;
     }
     push("Comando non riconosciuto. Scrivi help.");
@@ -215,19 +216,23 @@ export function OsDesktop({ onComplete }: Props) {
       setPage("ok");
     } else if (scenario.id === "win-proxy") {
       setPage("proxy");
+    } else if (scenario.id === "win-hosts") {
+      setPage("hosts");
+    } else if (scenario.id === "linux-nginx") {
+      setPage("down");
     } else {
       setPage("dns");
     }
   }
 
   const actions = useMemo(
-    () => (scenario && world ? actionList(scenario, world) : []),
+    () => (scenario && world ? osActions(scenario, world) : []),
     [scenario, world],
   );
 
   function submitReport() {
     if (!scenario || !world) return;
-    const g = gradeOsReport({ scenario, actions: actionList(scenario, world), report });
+    const g = gradeOsReport({ scenario, actions: osActions(scenario, world), report });
     const penalty = hintIdx * 5;
     const score = Math.max(0, g.score - penalty);
     const graded = penalty
@@ -282,8 +287,9 @@ export function OsDesktop({ onComplete }: Props) {
       ]
     : [
         { id: "browser", label: "Browser", icon: Globe },
-        { id: "settings", label: "Impostazioni", icon: Settings },
+        { id: "settings", label: scenario.id === "win-print" ? "Stampanti" : "Impostazioni", icon: Settings },
         { id: "terminal", label: "Terminale", icon: TerminalSquare },
+        ...(scenario.id === "win-hosts" ? [{ id: "editor", label: "Editor", icon: FileText }] : []),
         { id: "events", label: "Eventi", icon: ScrollText },
       ];
 
@@ -294,10 +300,36 @@ export function OsDesktop({ onComplete }: Props) {
           <p className="text-sm font-medium">{scenario.title}</p>
           <p className="max-w-2xl text-xs text-muted-foreground">{scenario.ticket}</p>
         </div>
-        <Button type="button" size="sm" variant="outline" onClick={() => setScenario(null)}>
-          Cambia caso
-        </Button>
+        <div className="flex gap-2">
+          <Button type="button" size="sm" variant="outline" onClick={() => setShowDocs((v) => !v)}>
+            <BookOpen className="size-3.5" />
+            Documentazione
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={() => setScenario(null)}>
+            Cambia caso
+          </Button>
+        </div>
       </div>
+
+      {showDocs && (
+        <div className="space-y-2 rounded-lg border border-teal-700/30 bg-teal-50/70 p-3 text-sm dark:bg-teal-950/30">
+          {scenario.docs.map((doc) => (
+            <div key={doc.title}>
+              <p className="font-medium">{doc.title}</p>
+              <p className="text-muted-foreground">{doc.body}</p>
+            </div>
+          ))}
+          <p className="text-xs text-muted-foreground">
+            La guida non toglie punti. Gli indizi sotto il report sì.
+          </p>
+        </div>
+      )}
+
+      {world.surpriseFired && scenario.surprise && (
+        <div className="rounded-lg border border-amber-400/70 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
+          Imprevisto — {scenario.surprise}
+        </div>
+      )}
 
       <div
         className={cn(
@@ -392,9 +424,116 @@ export function OsDesktop({ onComplete }: Props) {
                         <p className="text-sm">Proxy 192.168.99.99:8080 non raggiungibile.</p>
                       </div>
                     )}
+                    {page === "hosts" && (
+                      <div className="rounded-md border border-rose-300 bg-rose-50 p-4 text-rose-900">
+                        <p className="font-semibold">Questo sito è stato dirottato</p>
+                        <p className="text-sm">La pagina è finita su 127.0.0.1, cioè su questo PC. Controlla il file hosts.</p>
+                      </div>
+                    )}
+                    {page === "down" && (
+                      <div className="rounded-md border border-rose-300 bg-rose-50 p-4 text-rose-900">
+                        <p className="font-semibold">Impossibile raggiungere il sito</p>
+                        <p className="text-sm">Il server non accetta connessioni sulla porta 80.</p>
+                      </div>
+                    )}
                   </div>
                 )}
-                {app === "settings" && (
+                {app === "settings" && scenario.id === "win-print" && (
+                  <div className="space-y-3">
+                    <p className="font-medium">Stampante segreteria</p>
+                    <p className="text-xs text-muted-foreground">
+                      Stato: {world.printerPaused ? "in pausa" : "pronta"} · coda: {world.queueCleared ? "vuota" : "1 lavoro in errore (Documento-segreteria.pdf)"}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          mark("printerSeen");
+                          patch((w) => ({ ...w, queueCleared: true, checks: { ...w.checks, printerSeen: true } }));
+                        }}
+                      >
+                        Annulla coda
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          mark("printerSeen");
+                          patch((w) => ({
+                            ...w,
+                            printerPaused: false,
+                            checks: { ...w.checks, printerSeen: true, resumed: true },
+                          }));
+                        }}
+                      >
+                        Riprendi
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          mark("printerSeen");
+                          if (world.queueCleared && !world.printerPaused) {
+                            patch((w) => ({ ...w, checks: { ...w.checks, printerSeen: true, testPage: true } }));
+                          } else {
+                            patch((w) => ({ ...w, checks: { ...w.checks, printerSeen: true } }));
+                          }
+                        }}
+                      >
+                        Pagina di prova
+                      </Button>
+                    </div>
+                    {world.checks.testPage && world.queueCleared && !world.printerPaused ? (
+                      <p className="text-sm text-teal-700 dark:text-teal-300">Pagina di prova uscita.</p>
+                    ) : world.checks.testPage ? (
+                      <p className="text-sm text-amber-800">La prova non esce: coda o pausa ancora attive.</p>
+                    ) : null}
+                  </div>
+                )}
+                {app === "settings" && scenario.id === "win-update" && (
+                  <div className="space-y-3">
+                    <p className="font-medium">Windows Update</p>
+                    <p className="text-xs text-muted-foreground">
+                      Servizio wuauserv: {world.updateService ? "in esecuzione" : "arrestato"} ·{" "}
+                      {world.updateDone ? "installato" : world.updateNeedsReboot ? "in sospeso, serve un riavvio" : "fisso allo 0%"}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          mark("updateSeen");
+                          patch((w) => ({
+                            ...w,
+                            updateService: true,
+                            checks: { ...w.checks, updateSeen: true, serviceStarted: true },
+                          }));
+                        }}
+                      >
+                        Avvia servizio
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          mark("updateSeen");
+                          patch((w) => ({
+                            ...w,
+                            updateDone: w.surpriseFired && w.updateService,
+                            checks: { ...w.checks, updateSeen: true },
+                          }));
+                        }}
+                      >
+                        Riavvia e riprendi
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {app === "settings" && scenario.id !== "win-print" && scenario.id !== "win-update" && (
                   <div className="space-y-4">
                     <div>
                       <p className="mb-1 font-medium">Scheda Ethernet · DNS</p>
@@ -448,7 +587,31 @@ export function OsDesktop({ onComplete }: Props) {
                     </div>
                   </div>
                 )}
-                {app === "editor" && (
+                {app === "editor" && scenario.id === "win-hosts" && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">C:\Windows\System32\drivers\etc\hosts</p>
+                    <Textarea
+                      rows={8}
+                      value={hostsDraft}
+                      onChange={(e) => setHostsDraft(e.target.value)}
+                      className="font-mono text-xs"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => {
+                        patch((w) => ({
+                          ...w,
+                          hosts: hostsDraft,
+                          checks: { ...w.checks, hostsRead: true, hostsSaved: true },
+                        }));
+                      }}
+                    >
+                      Salva file
+                    </Button>
+                  </div>
+                )}
+                {app === "editor" && scenario.id !== "win-hosts" && (
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">/etc/resolv.conf</p>
                     <Textarea
@@ -476,7 +639,13 @@ export function OsDesktop({ onComplete }: Props) {
                   <pre className="whitespace-pre-wrap rounded-md bg-white p-3 font-mono text-xs text-zinc-800">
                     {scenario.id === "win-proxy"
                       ? "WinHTTP: proxy enabled 192.168.99.99:8080\nBrowser: connection refused\nICMP ping 1.1.1.1: success"
-                      : `DNS Client: query intranet.scuola.local via ${world.dns}\n${world.dns === "10.20.0.2" ? "NOERROR" : "SERVFAIL / timeout"}\nNota: 8.8.8.8 non conosce i nomi interni .local`}
+                      : scenario.id === "win-hosts"
+                        ? `Hosts:\n${world.hosts.trim()}`
+                        : scenario.id === "win-print"
+                          ? `Spooler: ${world.queueCleared ? "coda vuota" : "job in errore"}\nPrinter: ${world.printerPaused ? "paused" : "ready"}`
+                          : scenario.id === "win-update"
+                            ? `wuauserv: ${world.updateService ? "running" : "stopped"}\nUpdate: ${world.updateDone ? "installed" : "0%"}`
+                            : `DNS Client: query intranet.scuola.local via ${world.dns}\n${world.dns === "10.20.0.2" ? "NOERROR" : "SERVFAIL / timeout"}\nNota: 8.8.8.8 non conosce i nomi interni .local`}
                   </pre>
                 )}
               </div>

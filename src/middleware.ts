@@ -31,7 +31,8 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/teacher") ||
     pathname.startsWith("/student") ||
     pathname.startsWith("/lab") ||
-    pathname.startsWith("/admin");
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/guide");
 
   if (!token && isProtected) {
     const url = req.nextUrl.clone();
@@ -64,5 +65,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/teacher/:path*", "/student/:path*", "/lab/:path*", "/admin/:path*"],
+  matcher: ["/login", "/teacher/:path*", "/student/:path*", "/lab/:path*", "/admin/:path*", "/guide", "/guide/:path*"],
 };

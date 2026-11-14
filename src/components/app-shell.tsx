@@ -12,6 +12,8 @@ import {
   ClipboardCheck,
   ListTodo,
   Bell,
+  BookOpen,
+  Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -20,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useLocale } from "@/lib/i18n";
 import { NotificationBell } from "@/components/teacher/notification-bell";
+import { levelForXp } from "@/lib/levels";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
 
@@ -41,10 +44,13 @@ export function AppShell({
     { href: "/teacher/tickets/new", label: t("nav_new_ticket"), icon: Ticket },
     { href: "/teacher/review", label: t("nav_review"), icon: ClipboardCheck },
     { href: "/teacher/notifications", label: t("nav_notifications"), icon: Bell },
+    { href: "/guide", label: t("nav_guide"), icon: BookOpen },
     { href: "/roadmap", label: t("nav_roadmap"), icon: ListTodo },
   ];
   const studentNav: NavItem[] = [
     { href: "/student", label: t("nav_board"), icon: LayoutDashboard },
+    { href: "/student/classifica", label: t("nav_rank"), icon: Trophy },
+    { href: "/guide", label: t("nav_guide"), icon: BookOpen },
     { href: "/roadmap", label: t("nav_roadmap"), icon: ListTodo },
   ];
   const nav = role === "TEACHER" ? teacherNav : studentNav;
@@ -89,7 +95,7 @@ export function AppShell({
           <div className="ml-auto flex items-center gap-2">
             {typeof xp === "number" && (
               <span className="hidden rounded-md border px-2 py-1 text-xs font-medium text-amber-800 dark:text-amber-200 sm:inline">
-                {xp} XP
+                Lv {levelForXp(xp).level} · {levelForXp(xp).title} · {xp} XP
               </span>
             )}
             {role === "TEACHER" && <NotificationBell />}

@@ -3,6 +3,13 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 Versioning: vedi [docs/VERSIONING.md](./docs/VERSIONING.md).
 
+## [0.1.6] — 2026-11-14
+
+### Aggiunto
+- Quattro casi desktop: file hosts, coda di stampa, nginx fermo, Windows Update bloccato. A metà lavoro arriva un imprevisto da sistemare.
+- Guida del tecnico in `/guide` e tasto Documentazione sul PC simulato. Non toglie punti.
+- Livelli da XP (Tirocinante → Referente) e classifica di classe.
+
 ## [0.1.5] — 2026-11-14
 
 ### Aggiunto

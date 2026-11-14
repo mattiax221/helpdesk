@@ -5,6 +5,8 @@ import { AppShell } from "@/components/app-shell";
 import { KanbanBoard } from "@/components/kanban/board";
 import { LocalizedHeading } from "@/components/localized-heading";
 import { Card, CardContent } from "@/components/ui/card";
+import { levelForXp } from "@/lib/levels";
+import Link from "next/link";
 
 export default async function StudentBoardPage() {
   const session = await requireRole("STUDENT");
@@ -72,6 +74,16 @@ export default async function StudentBoardPage() {
   return (
     <AppShell role="STUDENT" userName={session.user.name || "Studente"} xp={user?.xp ?? 0}>
       <LocalizedHeading titleKey="board_title" subtitleKey="board_subtitle" />
+      <p className="mb-4 text-sm text-muted-foreground">
+        Livello {levelForXp(user?.xp ?? 0).level} · {levelForXp(user?.xp ?? 0).title}.{" "}
+        <Link href="/student/classifica" className="text-teal-800 underline-offset-2 hover:underline dark:text-teal-200">
+          Classifica di classe
+        </Link>
+        {" · "}
+        <Link href="/guide" className="text-teal-800 underline-offset-2 hover:underline dark:text-teal-200">
+          Guida
+        </Link>
+      </p>
       {items.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-sm text-muted-foreground">

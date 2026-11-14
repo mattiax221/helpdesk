@@ -118,31 +118,30 @@ export const ROADMAP_CATALOG: RoadmapSeed[] = [
     sortOrder: 115,
   },
 
-  // —— In corso
   {
     title: "Altri casi sul desktop simulato",
     description:
-      "Solo software: servizio fermo, file hosts, coda di stampa, aggiornamento bloccato. Stesso PC, nuovi ticket.",
+      "Hosts, coda di stampa, nginx fermo e Windows Update bloccato. Stesso PC, casi nuovi.",
     category: "Mini-game",
     priority: "HIGH",
-    status: "IN_PROGRESS",
-    sortOrder: 10,
+    status: "DONE",
+    sortOrder: 116,
   },
 
   // —— In piano (prossimi step)
   {
     title: "Imprevisti sul PC del cliente",
     description:
-      "Mentre lo studente lavora sul desktop possono arrivare imprevisti: una chiamata, un servizio che cade, un file che cambia. Va gestito prima di chiudere.",
+      "Sui casi nuovi, a metà lavoro arriva un imprevisto (altra riga hosts, stampante in pausa, porta occupata, riavvio). Va risolto prima di chiudere.",
     category: "Mini-game",
     priority: "HIGH",
-    status: "PLANNED",
-    sortOrder: 2,
+    status: "DONE",
+    sortOrder: 117,
   },
   {
     title: "Task di tipo diverso",
     description:
-      "Oltre al ticket e al desktop: procedure guidate, ricerca guasti e configurazioni. Tutte finiscono sulla stessa board.",
+      "Oltre al ticket e al desktop: procedure guidate, ricerca guasti e configurazioni. I casi desktop nuovi ci sono già. Tutte finiscono sulla stessa board.",
     category: "Didattica",
     priority: "HIGH",
     status: "PLANNED",
@@ -151,20 +150,20 @@ export const ROADMAP_CATALOG: RoadmapSeed[] = [
   {
     title: "Documentazione apribile dallo studente",
     description:
-      "Una guida sul problema, apribile da ogni studente mentre lavora, senza uscire dal ticket o dal PC simulato.",
+      "Guida in /guide e tasto Documentazione sul PC simulato. Non toglie punti, a differenza degli indizi.",
     category: "Studente",
     priority: "HIGH",
-    status: "PLANNED",
-    sortOrder: 6,
+    status: "DONE",
+    sortOrder: 118,
   },
   {
     title: "Livelli e classifica",
     description:
-      "Livelli da XP e voti, più una classifica di classe visibile a studenti e docente.",
+      "Dal tirocinante al referente, in base agli XP. Classifica di classe per gli studenti e livello accanto al nome per il docente.",
     category: "Gamification",
     priority: "HIGH",
-    status: "PLANNED",
-    sortOrder: 8,
+    status: "DONE",
+    sortOrder: 119,
   },
   {
     title: "Import roster CSV / Google Classroom",
