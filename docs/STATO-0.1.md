@@ -54,8 +54,11 @@ Giochi assegnabili come compiti con punteggio minimo e scadenza:
 | `osi` | OSI Layer Match |
 | `cli` | CLI Command Strike |
 | `wifi` | Sicurezza Wi‑Fi |
+| `ossim` | Desktop Windows / Linux (troubleshooting software + report) |
 
 Classifica Lab per classe.
+
+Il desktop simulato (v0.1.1) ha tre casi: DNS Windows, proxy Windows, `resolv.conf` Linux. Non è un sistema operativo completo: è la prima slice.
 
 ### 5. Notifiche scadenze (in-app)
 - Campanella docente + pagina `/teacher/notifications`

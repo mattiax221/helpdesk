@@ -107,7 +107,7 @@ export default async function ClassroomDetailPage({
     .filter((r) => r.plays > 0)
     .sort((a, b) => b.labXp - a.labXp || b.bestScore - a.bestScore);
 
-  const gameKeys = ["rj45", "terminal", "ports", "subnet", "osi", "cli", "wifi"] as const;
+  const gameKeys = ["rj45", "terminal", "ports", "subnet", "osi", "cli", "wifi", "ossim"] as const;
   const byGame = gameKeys.map((gameKey) => {
     const bestByUser = new Map<string, number>();
     for (const g of gameScores.filter((x) => x.gameKey === gameKey)) {

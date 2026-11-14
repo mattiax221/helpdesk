@@ -5,7 +5,8 @@ export type LabGameKey =
   | "subnet"
   | "osi"
   | "cli"
-  | "wifi";
+  | "wifi"
+  | "ossim";
 
 export type LabGameDef = {
   key: LabGameKey;
@@ -88,6 +89,18 @@ export const LAB_GAMES: LabGameDef[] = [
     skill: "Sicurezza",
     estimatedMinutes: 6,
     defaultMinScore: 50,
+  },
+  {
+    key: "ossim",
+    title: "Desktop Windows / Linux",
+    titleEn: "Windows / Linux desktop",
+    description:
+      "Sistema un problema solo software dentro un PC simulato, poi scrivi cosa hai fatto.",
+    descriptionEn:
+      "Fix a software-only issue inside a simulated PC, then write what you did.",
+    skill: "Sistemi / troubleshooting",
+    estimatedMinutes: 15,
+    defaultMinScore: 60,
   },
 ];
 

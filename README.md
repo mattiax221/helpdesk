@@ -1,6 +1,6 @@
 # HelpDesk Lab
 
-**Versione:** `0.1.0` (beta) — vedi [docs/VERSIONING.md](./docs/VERSIONING.md) · [CHANGELOG](./CHANGELOG.md) · [Documentazione](./docs/00-INDICE.md)
+**Versione:** `0.1.1` (beta) — vedi [docs/VERSIONING.md](./docs/VERSIONING.md) · [CHANGELOG](./CHANGELOG.md) · [Documentazione](./docs/00-INDICE.md)
 
 Simulatore educativo di ticketing aziendale (stile Jira Service Management) per scuole superiori — indirizzo **Tecnico / Operatore Informatico**.
 

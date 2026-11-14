@@ -18,6 +18,7 @@ const GAME_LABELS: Record<string, string> = {
   osi: "OSI",
   cli: "CLI",
   wifi: "Wi‑Fi",
+  ossim: "Desktop OS",
 };
 
 export function LabLeaderboard({

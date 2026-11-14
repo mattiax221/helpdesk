@@ -23,7 +23,8 @@ Ad ogni rilascio: aggiornare `CHANGELOG.md` + tag git `vX.Y.Z` (opzionale ma con
 
 | Versione | Focus | Criterio di uscita |
 | --- | --- | --- |
-| **0.1.0** ← *ora* | Base usabile: auth, ticket, Lab, catene, notifiche in-app, deploy | Checklist test A–F OK |
+| **0.1.0** | Base usabile: auth, ticket, Lab, catene, notifiche in-app, deploy | Checklist test A–F OK |
+| **0.1.1** ← *ora* | Desktop simulato Windows/Linux (solo software) + fix form ticket | Un caso risolto e report corretto |
 | **0.2.0** | Import roster (CSV e/o Classroom) | Classe reale caricata in un click |
 | **0.3.0** | Lab topologia collegato a **VirtLab** | Almeno un esercizio rete end-to-end |
 | **0.4.0** | Peer review + badge competenze | Flusso studente→studente→docente |

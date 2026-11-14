@@ -9,6 +9,7 @@ import { SubnetGame } from "@/components/labs/subnet-game";
 import { OsiGame } from "@/components/labs/osi-game";
 import { CliGame } from "@/components/labs/cli-game";
 import { WifiGame } from "@/components/labs/wifi-game";
+import { OsDesktop } from "@/components/labs/os-desktop";
 import { reportLabScore } from "@/lib/lab-score";
 import type { LabGameKey } from "@/lib/lab-catalog";
 
@@ -61,6 +62,8 @@ export function LabGamePlayer({
       return <CliGame onComplete={onComplete} />;
     case "wifi":
       return <WifiGame onComplete={onComplete} />;
+    case "ossim":
+      return <OsDesktop onComplete={onComplete} />;
     default:
       return <p className="text-sm text-muted-foreground">Gioco non trovato.</p>;
   }
