@@ -3,6 +3,11 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 Versioning: vedi [docs/VERSIONING.md](./docs/VERSIONING.md).
 
+## [0.1.4] — 2026-11-14
+
+### Aggiunto
+- Il docente, dal compito desktop, legge il report dello studente, le azioni sul PC simulato e il voto automatico, e può lasciare un commento visibile allo studente.
+
 ## [0.1.3] — 2026-11-14
 
 ### Aggiunto

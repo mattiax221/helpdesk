@@ -236,10 +236,15 @@ export function OsDesktop({ onComplete }: Props) {
     setGrade(graded);
     onComplete(score, {
       scenarioId: scenario.id,
+      scenarioTitle: scenario.title,
       os: scenario.os,
       report,
       actions: g.done,
       keywordsHit: g.keywordsHit,
+      keywordsMiss: g.keywordsMiss,
+      notes: graded.notes,
+      actionScore: g.actionScore,
+      reportScore: graded.score - g.actionScore,
     });
   }
 

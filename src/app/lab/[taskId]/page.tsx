@@ -10,6 +10,8 @@ import { LabGamePlayer } from "@/components/labs/lab-game-player";
 import { getLabGame } from "@/lib/lab-catalog";
 import { cn } from "@/lib/utils";
 import { hasRole } from "@/lib/roles";
+import { parseDesktopAttempt } from "@/lib/desktop-report";
+import { LabDesktopReviews } from "@/components/teacher/lab-desktop-reviews";
 
 export default async function LabTaskPage({
   params,
@@ -30,7 +32,10 @@ export default async function LabTaskPage({
         },
       },
       submissions: {
-        include: { user: { select: { id: true, name: true } } },
+        include: {
+          user: { select: { id: true, name: true } },
+          scores: { orderBy: { createdAt: "desc" }, take: 1 },
+        },
         orderBy: { bestScore: "desc" },
       },
     },
@@ -38,18 +43,19 @@ export default async function LabTaskPage({
 
   if (!task) notFound();
 
-  const isOwner = task.createdById === session.user.id;
+  const isOwner =
+    task.createdById === session.user.id || task.classroom.ownerId === session.user.id;
   const isMember = task.classroom.memberships.length > 0;
   if (!isOwner && !isMember) notFound();
 
   const game = getLabGame(task.gameKey);
-  let mySubmission = task.submissions.find((s) => s.userId === session.user.id);
+  const mySubmission = task.submissions.find((s) => s.userId === session.user.id);
   if (mySubmission && mySubmission.status === "ASSIGNED") {
-    mySubmission = await prisma.labTaskSubmission.update({
+    await prisma.labTaskSubmission.update({
       where: { id: mySubmission.id },
       data: { status: "IN_PROGRESS" },
-      include: { user: { select: { id: true, name: true } } },
     });
+    mySubmission.status = "IN_PROGRESS";
   }
 
   const backHref = role === "TEACHER" ? `/teacher/classrooms/${task.classroomId}` : "/student";
@@ -89,6 +95,14 @@ export default async function LabTaskPage({
             <Badge variant="outline">+{mySubmission.xpEarned} XP da questo compito</Badge>
           </div>
         )}
+        {mySubmission?.teacherNote ? (
+          <div className="max-w-3xl rounded-md border border-teal-700/30 bg-teal-50 px-3 py-2 text-sm dark:bg-teal-950/40">
+            <p className="text-xs font-medium uppercase tracking-wide text-teal-800 dark:text-teal-200">
+              Commento del docente
+            </p>
+            <p className="mt-1 whitespace-pre-wrap">{mySubmission.teacherNote}</p>
+          </div>
+        ) : null}
       </div>
 
       {role === "STUDENT" ? (
@@ -102,6 +116,33 @@ export default async function LabTaskPage({
           </CardHeader>
           <CardContent>
             <LabGamePlayer gameKey={task.gameKey} taskId={task.id} minScore={task.minScore} />
+          </CardContent>
+        </Card>
+      ) : task.gameKey === "ossim" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Report desktop</CardTitle>
+            <CardDescription>
+              Testo scritto dallo studente, azioni sul PC simulato e voto automatico. Il commento resta visibile allo studente.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LabDesktopReviews
+              rows={task.submissions.map((s) => {
+                const latest = s.scores[0];
+                return {
+                  id: s.id,
+                  name: s.user.name || "Studente",
+                  status: s.status,
+                  bestScore: s.bestScore,
+                  attempts: s.attempts,
+                  teacherNote: s.teacherNote,
+                  attempt: latest
+                    ? parseDesktopAttempt(latest.meta, latest.score, latest.createdAt)
+                    : null,
+                };
+              })}
+            />
           </CardContent>
         </Card>
       ) : (

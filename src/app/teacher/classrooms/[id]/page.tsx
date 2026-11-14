@@ -197,7 +197,7 @@ export default async function ClassroomDetailPage({
                       href={`/lab/${t.id}`}
                       className={cn(buttonVariants({ size: "sm", variant: "ghost" }))}
                     >
-                      Apri
+                      {t.gameKey === "ossim" ? "Report" : "Apri"}
                     </Link>
                   </div>
                 </div>

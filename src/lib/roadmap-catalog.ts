@@ -109,6 +109,15 @@ export const ROADMAP_CATALOG: RoadmapSeed[] = [
     sortOrder: 110,
   },
 
+  {
+    title: "Report desktop visibile al docente",
+    description: "Il docente legge cosa ha scritto lo studente e il voto automatico, e può aggiungere un commento.",
+    category: "Valutazione",
+    priority: "HIGH",
+    status: "DONE",
+    sortOrder: 115,
+  },
+
   // —— In corso
   {
     title: "Altri casi sul desktop simulato",
@@ -118,14 +127,6 @@ export const ROADMAP_CATALOG: RoadmapSeed[] = [
     priority: "HIGH",
     status: "IN_PROGRESS",
     sortOrder: 10,
-  },
-  {
-    title: "Report desktop visibile al docente",
-    description: "Il docente legge cosa ha scritto lo studente e il voto automatico, e può aggiungere un commento.",
-    category: "Valutazione",
-    priority: "HIGH",
-    status: "IN_PROGRESS",
-    sortOrder: 20,
   },
 
   // —— In piano
