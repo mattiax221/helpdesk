@@ -129,7 +129,43 @@ export const ROADMAP_CATALOG: RoadmapSeed[] = [
     sortOrder: 10,
   },
 
-  // —— In piano
+  // —— In piano (prossimi step)
+  {
+    title: "Imprevisti sul PC del cliente",
+    description:
+      "Mentre lo studente lavora sul desktop possono arrivare imprevisti: una chiamata, un servizio che cade, un file che cambia. Va gestito prima di chiudere.",
+    category: "Mini-game",
+    priority: "HIGH",
+    status: "PLANNED",
+    sortOrder: 2,
+  },
+  {
+    title: "Task di tipo diverso",
+    description:
+      "Oltre al ticket e al desktop: procedure guidate, ricerca guasti e configurazioni. Tutte finiscono sulla stessa board.",
+    category: "Didattica",
+    priority: "HIGH",
+    status: "PLANNED",
+    sortOrder: 4,
+  },
+  {
+    title: "Documentazione apribile dallo studente",
+    description:
+      "Una guida sul problema, apribile da ogni studente mentre lavora, senza uscire dal ticket o dal PC simulato.",
+    category: "Studente",
+    priority: "HIGH",
+    status: "PLANNED",
+    sortOrder: 6,
+  },
+  {
+    title: "Livelli e classifica",
+    description:
+      "Livelli da XP e voti, più una classifica di classe visibile a studenti e docente.",
+    category: "Gamification",
+    priority: "HIGH",
+    status: "PLANNED",
+    sortOrder: 8,
+  },
   {
     title: "Import roster CSV / Google Classroom",
     description: "File CSV e corso Classroom. L’elenco incollato a mano c’è già.",

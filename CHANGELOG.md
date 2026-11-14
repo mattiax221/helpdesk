@@ -3,6 +3,11 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 Versioning: vedi [docs/VERSIONING.md](./docs/VERSIONING.md).
 
+## [0.1.5] — 2026-11-14
+
+### Aggiunto
+- Roadmap, colonna In piano: imprevisti sul PC del cliente, task di tipo diverso, documentazione apribile dallo studente, livelli e classifica.
+
 ## [0.1.4] — 2026-11-14
 
 ### Aggiunto
