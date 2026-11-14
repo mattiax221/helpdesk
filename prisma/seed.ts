@@ -1,5 +1,6 @@
 import { PrismaClient, Role, TicketCategory, TicketPriority, Difficulty } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { ROADMAP_CATALOG } from "../src/lib/roadmap-catalog";
 
 const prisma = new PrismaClient();
 
@@ -330,87 +331,7 @@ async function main() {
     },
   });
 
-  const roadmapSeed = [
-    {
-      title: "Catene di incidenti collegati",
-      description: "Un ticket mal risolto genera un secondo ticket correlato (DNS → AD join).",
-      category: "Didattica",
-      priority: "HIGH" as const,
-      status: "DONE" as const,
-    },
-    {
-      title: "Modalità esame a tempo",
-      description: "Sessione senza chat AI, solo log, export PDF voto + diagnosi. (non prioritaria)",
-      category: "Valutazione",
-      priority: "LOW" as const,
-      status: "IDEA" as const,
-    },
-    {
-      title: "Peer review tra studenti",
-      description: "Rubrica fissa: uno studente valuta la diagnosi di un altro, poi conferma docente.",
-      category: "Valutazione",
-      priority: "MEDIUM" as const,
-      status: "IDEA" as const,
-    },
-    {
-      title: "Lab topologia di rete (VirtLab)",
-      description: "Mappa switch/router/firewall collegata al repo VirtLab.",
-      category: "Mini-game",
-      priority: "HIGH" as const,
-      status: "PLANNED" as const,
-    },
-    {
-      title: "Runbook builder",
-      description: "Lo studente scrive procedure a step riusabili; il docente marca gold.",
-      category: "Didattica",
-      priority: "MEDIUM" as const,
-      status: "IDEA" as const,
-    },
-    {
-      title: "Badge competenze",
-      description: "Reti, SO, Security, Hardware sbloccati con soglie XP/voti.",
-      category: "Gamification",
-      priority: "MEDIUM" as const,
-      status: "PLANNED" as const,
-    },
-    {
-      title: "Import roster CSV / Google Classroom",
-      description: "Onboarding classe intera in un click.",
-      category: "Docente",
-      priority: "HIGH" as const,
-      status: "IN_PROGRESS" as const,
-    },
-    {
-      title: "Replay timeline ticket",
-      description: "Cronologia apertura → chat → chiusura come ticket history reale.",
-      category: "Docente",
-      priority: "LOW" as const,
-      status: "IDEA" as const,
-    },
-    {
-      title: "Compiti Lab assegnabili",
-      description: "Mini-game come consegne con punteggio minimo e classifica.",
-      category: "Mini-game",
-      priority: "HIGH" as const,
-      status: "DONE" as const,
-    },
-    {
-      title: "Deploy su Vercel + Postgres",
-      description: "Ambiente cloud condiviso per la classe (Vercel + Supabase Postgres).",
-      category: "Piattaforma",
-      priority: "HIGH" as const,
-      status: "DONE" as const,
-    },
-    {
-      title: "Avvisi scadenze in-app",
-      description: "Campanella docente per Lab/SLA scaduti. Email Workspace in seguito.",
-      category: "Docente",
-      priority: "HIGH" as const,
-      status: "DONE" as const,
-    },
-  ];
-
-  await prisma.roadmapItem.createMany({ data: roadmapSeed });
+  await prisma.roadmapItem.createMany({ data: ROADMAP_CATALOG });
 
   console.log("Seed completato.");
   console.log("Docente: docente@helpdesklab.it / demo1234");

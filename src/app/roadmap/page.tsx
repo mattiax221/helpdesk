@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Headphones, ListTodo } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { syncRoadmapCatalog } from "@/lib/sync-roadmap";
 import { RoadmapBoard } from "@/components/roadmap/roadmap-board";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
@@ -9,8 +10,9 @@ import { cn } from "@/lib/utils";
 
 export default async function RoadmapPage() {
   const session = await auth();
+  await syncRoadmapCatalog();
   const items = await prisma.roadmapItem.findMany({
-    orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
+    orderBy: [{ sortOrder: "asc" }, { priority: "desc" }, { createdAt: "desc" }],
   });
   const canEdit = session?.user?.role === "TEACHER";
 
