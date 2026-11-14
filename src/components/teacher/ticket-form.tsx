@@ -232,8 +232,13 @@ export function TicketForm({
           <div className="space-y-2">
             <Label>Classe</Label>
             <Select value={classroomId} onValueChange={(v) => setClassroomId(v ?? "")}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleziona classe" />
+              <SelectTrigger className="w-full min-w-0">
+                <SelectValue placeholder="Seleziona classe">
+                  {(value: string | null) => {
+                    const c = classrooms.find((x) => x.id === value);
+                    return c ? `${c.name} (${c.code})` : null;
+                  }}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {classrooms.map((c) => (
@@ -252,8 +257,16 @@ export function TicketForm({
                 setAssignTo((v as "all" | "selected" | "group") || "all")
               }
             >
-              <SelectTrigger>
-                <SelectValue />
+              <SelectTrigger className="w-full min-w-0">
+                <SelectValue>
+                  {(value: string | null) =>
+                    value === "selected"
+                      ? "Studenti selezionati"
+                      : value === "group"
+                        ? "Gruppo di lavoro"
+                        : "Tutta la classe"
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tutta la classe</SelectItem>
@@ -271,8 +284,13 @@ export function TicketForm({
                 </p>
               ) : (
                 <Select value={groupId} onValueChange={(v) => setGroupId(v ?? "")}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona gruppo" />
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue placeholder="Seleziona gruppo">
+                      {(value: string | null) => {
+                        const g = groups.find((x) => x.id === value);
+                        return g ? `${g.name} (${g.memberIds.length} membri)` : null;
+                      }}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {groups.map((g) => (
@@ -387,8 +405,12 @@ export function TicketForm({
               <div className="space-y-2">
                 <Label>Categoria</Label>
                 <Select value={form.category} onValueChange={(v) => update("category", v || form.category)}>
-                  <SelectTrigger>
-                    <SelectValue />
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue>
+                      {(value: string | null) =>
+                        value ? CATEGORY_LABELS[value as keyof typeof CATEGORY_LABELS] : null
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((c) => (
@@ -405,8 +427,12 @@ export function TicketForm({
                   value={form.difficulty}
                   onValueChange={(v) => update("difficulty", v || form.difficulty)}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue>
+                      {(value: string | null) =>
+                        value ? DIFFICULTY_LABELS[value as keyof typeof DIFFICULTY_LABELS] : null
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {difficulties.map((d) => (
@@ -490,8 +516,12 @@ export function TicketForm({
             <div className="space-y-2">
               <Label>Categoria</Label>
               <Select value={form.category} onValueChange={(v) => update("category", v || form.category)}>
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="w-full min-w-0">
+                  <SelectValue>
+                    {(value: string | null) =>
+                      value ? CATEGORY_LABELS[value as keyof typeof CATEGORY_LABELS] : null
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((c) => (
@@ -505,8 +535,12 @@ export function TicketForm({
             <div className="space-y-2">
               <Label>Priorità</Label>
               <Select value={form.priority} onValueChange={(v) => update("priority", v || form.priority)}>
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="w-full min-w-0">
+                  <SelectValue>
+                    {(value: string | null) =>
+                      value ? PRIORITY_LABELS[value as keyof typeof PRIORITY_LABELS] : null
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {priorities.map((p) => (
@@ -523,8 +557,12 @@ export function TicketForm({
                 value={form.difficulty}
                 onValueChange={(v) => update("difficulty", v || form.difficulty)}
               >
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="w-full min-w-0">
+                  <SelectValue>
+                    {(value: string | null) =>
+                      value ? DIFFICULTY_LABELS[value as keyof typeof DIFFICULTY_LABELS] : null
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {difficulties.map((d) => (
