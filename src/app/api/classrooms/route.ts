@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiUser, jsonError } from "@/lib/api";
 import { generateClassroomCode } from "@/lib/classroom-code";
+import { hasRole } from "@/lib/roles";
 
 const createSchema = z.object({
   name: z.string().min(3),
@@ -13,7 +14,7 @@ export async function GET() {
   const { user, error } = await requireApiUser();
   if (error || !user) return error!;
 
-  if (user.role === "TEACHER") {
+  if (hasRole(user.role, "TEACHER")) {
     const classrooms = await prisma.classroom.findMany({
       where: { ownerId: user.id },
       include: {

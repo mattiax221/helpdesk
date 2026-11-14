@@ -29,7 +29,7 @@ async function main() {
       name: "Prof. Laura Bianchi",
       firstName: "Laura",
       lastName: "Bianchi",
-      role: Role.TEACHER,
+      role: Role.ADMIN,
       passwordHash,
       xp: 0,
     },

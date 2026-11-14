@@ -7,6 +7,7 @@ import { RoadmapBoard } from "@/components/roadmap/roadmap-board";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { hasRole, homeForRole } from "@/lib/roles";
 
 export default async function RoadmapPage() {
   const session = await auth();
@@ -14,7 +15,7 @@ export default async function RoadmapPage() {
   const items = await prisma.roadmapItem.findMany({
     orderBy: [{ sortOrder: "asc" }, { priority: "desc" }, { createdAt: "desc" }],
   });
-  const canEdit = session?.user?.role === "TEACHER";
+  const canEdit = hasRole(session?.user?.role, "TEACHER");
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-50 via-background to-slate-100 dark:from-slate-950 dark:via-background dark:to-slate-950">
@@ -31,7 +32,7 @@ export default async function RoadmapPage() {
             <ThemeToggle />
             {session?.user ? (
               <Link
-                href={session.user.role === "TEACHER" ? "/teacher" : "/student"}
+                href={homeForRole(session.user.role)}
                 className={cn(buttonVariants({ size: "sm", variant: "outline" }))}
               >
                 Torna all’app

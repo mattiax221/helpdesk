@@ -81,6 +81,11 @@ export default async function TeacherDashboardPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          {session.user.role === "ADMIN" ? (
+            <Link href="/admin" className={cn(buttonVariants({ variant: "outline" }))}>
+              Admin
+            </Link>
+          ) : null}
           <Link
             href="/teacher/review"
             className={cn(buttonVariants({ variant: "outline" }))}

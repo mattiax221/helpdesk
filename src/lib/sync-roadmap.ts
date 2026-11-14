@@ -1,8 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { ROADMAP_CATALOG } from "@/lib/roadmap-catalog";
 
+const OBSOLETE_TITLES = ["Lab topologia di rete"];
+
 /** Inserisce le card mancanti e riallinea titolo noto (stato, testo, colonna). */
 export async function syncRoadmapCatalog() {
+  if (OBSOLETE_TITLES.length) {
+    await prisma.roadmapItem.deleteMany({ where: { title: { in: OBSOLETE_TITLES } } });
+  }
   const existing = await prisma.roadmapItem.findMany();
   const byTitle = new Map(existing.map((item) => [item.title, item]));
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { isAdminEmail } from "@/lib/roles";
 
 function authSecret() {
   return process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
@@ -29,7 +30,8 @@ export async function middleware(req: NextRequest) {
   const isProtected =
     pathname.startsWith("/teacher") ||
     pathname.startsWith("/student") ||
-    pathname.startsWith("/lab");
+    pathname.startsWith("/lab") ||
+    pathname.startsWith("/admin");
 
   if (!token && isProtected) {
     const url = req.nextUrl.clone();
@@ -38,13 +40,21 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  const admin = token?.role === "ADMIN" || isAdminEmail(typeof token?.email === "string" ? token.email : "");
+
   if (token && isAuthPage) {
+    const url = req.nextUrl.clone();
+    url.pathname = admin ? "/admin" : token.role === "TEACHER" ? "/teacher" : "/student";
+    return NextResponse.redirect(url);
+  }
+
+  if (token && pathname.startsWith("/admin") && !admin) {
     const url = req.nextUrl.clone();
     url.pathname = token.role === "TEACHER" ? "/teacher" : "/student";
     return NextResponse.redirect(url);
   }
 
-  if (token && pathname.startsWith("/teacher") && token.role !== "TEACHER") {
+  if (token && pathname.startsWith("/teacher") && token.role !== "TEACHER" && !admin) {
     const url = req.nextUrl.clone();
     url.pathname = "/student";
     return NextResponse.redirect(url);
@@ -54,5 +64,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/teacher/:path*", "/student/:path*", "/lab/:path*"],
+  matcher: ["/login", "/teacher/:path*", "/student/:path*", "/lab/:path*", "/admin/:path*"],
 };

@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LabGamePlayer } from "@/components/labs/lab-game-player";
 import { getLabGame } from "@/lib/lab-catalog";
 import { cn } from "@/lib/utils";
+import { hasRole } from "@/lib/roles";
 
 export default async function LabTaskPage({
   params,
@@ -18,7 +19,7 @@ export default async function LabTaskPage({
   const session = await requireSession();
   const { taskId } = await params;
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  const role = session.user.role === "TEACHER" ? "TEACHER" : "STUDENT";
+  const role = hasRole(session.user.role, "TEACHER") ? "TEACHER" : "STUDENT";
 
   const task = await prisma.labTask.findUnique({
     where: { id: taskId },

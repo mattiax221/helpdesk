@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     });
     if (!task) return jsonError("Compito non trovato", 404);
     if (task.gameKey !== gameKey) return jsonError("Gioco non corrispondente al compito");
-    if (task.classroom.memberships.length === 0 && user.role !== "TEACHER") {
+    if (task.classroom.memberships.length === 0 && user.role === "STUDENT") {
       return jsonError("Non sei iscritto a questa classe", 403);
     }
 

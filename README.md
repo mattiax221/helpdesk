@@ -13,7 +13,8 @@ Per testare la build attuale usa la [checklist](./docs/CHECKLIST-TEST.md).
 - Next.js 15 (App Router) + TypeScript
 - Tailwind CSS + shadcn/ui + Lucide
 - Prisma ORM + SQLite
-- Auth.js (NextAuth v5) — login **Codice Classe + Nome/Cognome** oppure email, Google OAuth predisposto
+- Auth.js (NextAuth v5) — login **Codice Classe + Nome/Cognome + email** oppure email docente, Google OAuth predisposto
+- Pagina **Admin** (`/admin`) per chi è in `ADMIN_EMAILS`
 - Generatore AI (`/api/generate-ticket`) con fallback mock
 - Drag & drop Kanban con `@dnd-kit`
 
@@ -34,7 +35,8 @@ Apri [http://127.0.0.1:3456](http://127.0.0.1:3456).
 | Ruolo | Accesso |
 | --- | --- |
 | Docente | `docente@helpdesklab.it` / `demo1234` |
-| Studente | Codice Classe **`IT-9482`** + Nome/Cognome (es. **Marco Rossi**) |
+| Studente | Codice Classe **`IT-9482`** + Nome/Cognome + email (es. **Marco Rossi**, `marco.rossi@studenti.it`) |
+| Admin | Stesse credenziali docente demo: l’email in `ADMIN_EMAILS` apre `/admin` |
 | Studente (email) | `marco.rossi@studenti.it` / `demo1234` |
 
 La classe seed è **3ª Operatore Informatico - Lab Reti** con 5 ticket già assegnati ai 3 studenti.
@@ -72,7 +74,7 @@ L’accesso con Codice Classe richiede che lo studente sia già nel roster della
 
 ### Studente
 
-1. Entra con Codice Classe + Nome/Cognome.
+1. Entra con Codice Classe + Nome/Cognome + email valida (nessun codice OTP). Se l’email è già in anagrafica, deve coincidere.
 2. Usa la **Kanban board** con filtri priorità/SLA e alert scadenza.
 3. Nel dettaglio ticket: descrizione cliente, allegati/log/screenshot, chat indizi, campi di chiusura obbligatori.
 4. Sulla **stessa board** compaiono anche le attività pratiche assegnate dal docente (RJ45, desktop Windows/Linux, ecc.). Si aprono come un ticket e si chiudono al raggiungimento del punteggio.

@@ -7,12 +7,14 @@ import { z } from "zod";
 import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { teacherEmailAllowlist } from "@/lib/authz";
+import { isAdminEmail } from "@/lib/roles";
 
 const classLoginSchema = z.object({
   mode: z.literal("class"),
   classCode: z.string().min(3),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
+  email: z.string().email(),
 });
 
 const emailLoginSchema = z.object({
@@ -105,6 +107,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           classCode: raw?.classCode,
           firstName: raw?.firstName,
           lastName: raw?.lastName,
+          email: String(raw?.email || "").trim().toLowerCase(),
         });
         if (!parsed.success) return null;
 
@@ -139,12 +142,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           })?.user ?? null;
         if (!user) return null;
 
+        const email = parsed.data.email.toLowerCase();
+        const taken = await prisma.user.findUnique({ where: { email } });
+        if (taken && taken.id !== user.id) return null;
+        if (user.email && user.email.toLowerCase() !== email) return null;
+        if (!user.email) {
+          await prisma.user.update({ where: { id: user.id }, data: { email } });
+          user.email = email;
+        }
+
         return {
           id: user.id,
           email: user.email,
           name: user.name ?? displayName,
           image: user.image,
-          role: user.role as Role,
+          role: isAdminEmail(user.email) ? "ADMIN" : (user.role as Role),
         };
       },
     }),
@@ -154,6 +166,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: Role }).role ?? "STUDENT";
+        if (user.email) token.email = user.email;
       }
 
       if (account?.provider === "google" && token.email) {
@@ -171,6 +184,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             data: { role, email },
           });
           token.role = role;
+        }
+      }
+
+      const email = String(token.email || "").toLowerCase();
+      if (email && isAdminEmail(email)) {
+        token.role = "ADMIN";
+        if (token.id) {
+          await prisma.user.updateMany({
+            where: { id: token.id as string, role: { not: "ADMIN" } },
+            data: { role: "ADMIN" },
+          });
         }
       }
 

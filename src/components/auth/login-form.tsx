@@ -19,9 +19,15 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
     const classCode = String(fd.get("classCode") || "").trim();
     const firstName = String(fd.get("firstName") || "").trim();
     const lastName = String(fd.get("lastName") || "").trim();
-    if (!classCode || !firstName || !lastName) {
+    const email = String(fd.get("studentEmail") || "").trim().toLowerCase();
+    if (!classCode || !firstName || !lastName || !email) {
       setLoading(false);
-      toast.error("Compila codice, nome e cognome");
+      toast.error("Compila codice, nome, cognome e email");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setLoading(false);
+      toast.error("Inserisci una email valida. Non viene inviato nessun codice.");
       return;
     }
     const res = await signIn("credentials", {
@@ -30,11 +36,12 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
       classCode,
       firstName,
       lastName,
+      email,
     });
     setLoading(false);
     if (res?.error) {
       toast.error(
-        "Accesso negato: controlla il codice (es. IT-9482) e che nome/cognome siano nel roster della classe",
+        "Accesso negato: controlla codice, nome nel roster e che l’email sia quella già salvata (o una nuova non usata da altri)",
       );
       return;
     }
@@ -65,7 +72,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
       <CardHeader>
         <CardTitle>Accedi al laboratorio</CardTitle>
         <CardDescription>
-          Studenti: Codice Classe + nome. Docenti: email demo o Google OAuth.
+          Studenti: codice, nome e una email valida (nessun codice di verifica). Docenti: email.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -108,14 +115,25 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
                   />
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="studentEmail">Email</Label>
+                <Input
+                  id="studentEmail"
+                  name="studentEmail"
+                  type="email"
+                  placeholder="nome.cognome@studenti.it"
+                  autoComplete="email"
+                  required
+                />
+              </div>
               <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading}>
                 Entra come tecnico L1/L2
               </Button>
             </form>
             <p className="text-xs text-muted-foreground">
-              Devi essere nel roster (il docente ti aggiunge). Demo: codice{" "}
-              <strong>IT-9482</strong> · studente <strong>Marco Rossi</strong>{" "}
-              (maiuscole/minuscole indifferenti).
+              Devi essere nel roster. La email viene solo registrata, senza OTP. Se ne hai già una,
+              va usata quella. Demo: codice <strong>IT-9482</strong> · <strong>Marco Rossi</strong> ·{" "}
+              <strong>marco.rossi@studenti.it</strong>.
             </p>
           </TabsContent>
           <TabsContent value="email" className="space-y-4 pt-4">

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiUser, jsonError } from "@/lib/api";
 import { getLabGame, LAB_GAME_KEYS } from "@/lib/lab-catalog";
+import { hasRole } from "@/lib/roles";
 
 const createSchema = z.object({
   classroomId: z.string().min(1),
@@ -21,7 +22,7 @@ export async function GET() {
   const { user, error } = await requireApiUser();
   if (error || !user) return error!;
 
-  if (user.role === "TEACHER") {
+  if (hasRole(user.role, "TEACHER")) {
     const tasks = await prisma.labTask.findMany({
       where: { createdById: user.id },
       include: {

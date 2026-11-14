@@ -14,7 +14,7 @@ export const ROADMAP_CATALOG: RoadmapSeed[] = [
   // —— Fatto
   {
     title: "Login classe e docente",
-    description: "Studente con codice + nome/cognome. Docente con email. Sessione che resta dopo il riavvio.",
+    description: "Studente con codice, nome/cognome e email valida (nessun codice OTP). Docente con email. Sessione che resta dopo il riavvio.",
     category: "Piattaforma",
     priority: "HIGH",
     status: "DONE",
@@ -67,6 +67,14 @@ export const ROADMAP_CATALOG: RoadmapSeed[] = [
     priority: "HIGH",
     status: "DONE",
     sortOrder: 70,
+  },
+  {
+    title: "Pannello admin",
+    description: "Crea, modifica ed elimina utenti e classi. L’admin entra con l’email in ADMIN_EMAILS (demo: docente@helpdesklab.it).",
+    category: "Piattaforma",
+    priority: "HIGH",
+    status: "DONE",
+    sortOrder: 85,
   },
   {
     title: "Classi, gruppi e elenco studenti",

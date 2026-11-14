@@ -3,6 +3,15 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 Versioning: vedi [docs/VERSIONING.md](./docs/VERSIONING.md).
 
+## [0.1.3] — 2026-11-14
+
+### Aggiunto
+- Pagina **Admin** (`/admin`): crea, modifica ed elimina utenti (ruolo, password, XP, roster) e classi (nome, codice, proprietario). Nessuna console SQL.
+- L’account in `ADMIN_EMAILS` (default `docente@helpdesklab.it`) diventa admin al login.
+
+### Cambiato
+- Login studente: email valida obbligatoria. Viene solo salvata, senza invio di OTP. Se l’account ne ha già una, deve coincidere.
+
 ## [0.1.2] — 2026-11-14
 
 ### Cambiato
