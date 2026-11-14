@@ -47,6 +47,10 @@ export type BoardItem = {
   grade?: number | null;
   chainKey?: string | null;
   chainStep?: number | null;
+  /** ticket = help desk classico, lab = attività pratica sulla stessa board */
+  kind?: "ticket" | "lab";
+  href?: string;
+  labSubmissionId?: string;
 };
 
 const PRIORITY_FILTERS: Array<TicketPriority | "ALL"> = [
@@ -124,12 +128,20 @@ function KanbanCard({ item, now }: { item: BoardItem; now: number }) {
       {...listeners}
     >
       <Link
-        href={`/student/tickets/${item.id}`}
+        href={item.href || `/student/tickets/${item.id}`}
         className="block space-y-2"
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-sm font-medium leading-snug">{item.title}</p>
         <div className="flex flex-wrap gap-1">
+          {item.kind === "lab" && (
+            <Badge
+              variant="outline"
+              className="border-teal-700/40 text-[10px] text-teal-800 dark:text-teal-200"
+            >
+              Attività
+            </Badge>
+          )}
           <span
             className={cn(
               "rounded px-1.5 py-0.5 text-[10px] font-medium",
@@ -248,13 +260,49 @@ export function KanbanBoard({ initialItems }: { initialItems: BoardItem[] }) {
     }
     if (!nextStatus || nextStatus === current.status) return;
 
+    if (current.kind === "lab") {
+      if (nextStatus === "WAITING_REVIEW" || nextStatus === "RESOLVED") {
+        toast.message("Apri l'attività e completala: sulla board si chiude da sola.");
+        router.push(current.href || "/student");
+        return;
+      }
+      const prev = items;
+      setItems((list) =>
+        list.map((i) =>
+          i.id === activeItemId
+            ? {
+                ...i,
+                status: nextStatus!,
+                startedAt:
+                  nextStatus === "IN_PROGRESS" && !i.startedAt ? new Date().toISOString() : i.startedAt,
+              }
+            : i,
+        ),
+      );
+      const res = await fetch(`/api/lab-submissions/${current.labSubmissionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: nextStatus === "IN_PROGRESS" ? "IN_PROGRESS" : "ASSIGNED",
+        }),
+      });
+      if (!res.ok) {
+        setItems(prev);
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || "Spostamento non riuscito");
+      } else {
+        router.refresh();
+      }
+      return;
+    }
+
     if (
       (nextStatus === "WAITING_REVIEW" || nextStatus === "RESOLVED") &&
       current.status !== "WAITING_REVIEW" &&
       current.status !== "RESOLVED"
     ) {
       toast.message("Apri il ticket e compila i campi di chiusura prima di inviarlo in verifica.");
-      router.push(`/student/tickets/${current.id}`);
+      router.push(current.href || `/student/tickets/${current.id}`);
       return;
     }
 

@@ -3,6 +3,11 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 Versioning: vedi [docs/VERSIONING.md](./docs/VERSIONING.md).
 
+## [0.1.2] — 2026-11-14
+
+### Cambiato
+- Niente più pagina «Compiti Lab». Ticket e attività (mini-game, desktop) stanno sulla stessa board dello studente.
+
 ## [0.1.1] — 2026-11-14
 
 ### Aggiunto

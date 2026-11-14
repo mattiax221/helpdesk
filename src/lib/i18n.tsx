@@ -23,7 +23,7 @@ const DICT = {
     nav_notifications: "Notifiche",
     board_title: "Help Desk Board",
     board_subtitle:
-      "Trascina i ticket tra le colonne. Apri il dettaglio per diagnosi, log e chat col cliente.",
+      "Tutti i lavori sono qui: ticket e attività. Trascina le card, apri il dettaglio per chiuderle.",
     lab_title: "Compiti Lab",
     lab_subtitle:
       "Esercizi assegnati dal docente: svolgi il mini-game e consegna raggiungendo il punteggio minimo.",
@@ -41,7 +41,7 @@ const DICT = {
     nav_notifications: "Alerts",
     board_title: "Help Desk Board",
     board_subtitle:
-      "Drag tickets across columns. Open a ticket for diagnosis, logs and customer chat.",
+      "Every job is on this board: tickets and tasks. Drag cards and open them to close the work.",
     lab_title: "Lab Tasks",
     lab_subtitle:
       "Teacher-assigned exercises: play the mini-game and submit by reaching the minimum score.",

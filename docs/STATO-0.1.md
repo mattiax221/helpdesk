@@ -42,8 +42,10 @@ Simulatore educativo di ticketing Help Desk (stile Jira/ITSM) per scuole superio
 - Se il voto è ≤ soglia (default 5), nasce il ticket successivo allo stesso studente
 - Banner catena su dettaglio + badge sulla Kanban
 
-### 4. Compiti Lab (mini-game)
-Giochi assegnabili come compiti con punteggio minimo e scadenza:
+### 4. Attività pratiche (sulla stessa board)
+Non c’è una sezione a parte. Il docente assegna dalla classe; lo studente le vede come card sulla **board**, insieme ai ticket. Aprendo la card si lavora (mini-game o desktop) e, a consegna valida, la card va in chiusi.
+
+Giochi:
 
 | Key | Titolo |
 | --- | --- |

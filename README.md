@@ -1,6 +1,6 @@
 # HelpDesk Lab
 
-**Versione:** `0.1.1` (beta) — vedi [docs/VERSIONING.md](./docs/VERSIONING.md) · [CHANGELOG](./CHANGELOG.md) · [Documentazione](./docs/00-INDICE.md)
+**Versione:** `0.1.2` (beta) — vedi [docs/VERSIONING.md](./docs/VERSIONING.md) · [CHANGELOG](./CHANGELOG.md) · [Documentazione](./docs/00-INDICE.md)
 
 Simulatore educativo di ticketing aziendale (stile Jira Service Management) per scuole superiori — indirizzo **Tecnico / Operatore Informatico**.
 
@@ -75,7 +75,7 @@ L’accesso con Codice Classe richiede che lo studente sia già nel roster della
 1. Entra con Codice Classe + Nome/Cognome.
 2. Usa la **Kanban board** con filtri priorità/SLA e alert scadenza.
 3. Nel dettaglio ticket: descrizione cliente, allegati/log/screenshot, chat indizi, campi di chiusura obbligatori.
-4. Sezione **Compiti Lab**: esercizi assegnati dal docente (RJ45, terminal, porte, subnet, OSI, CLI, Wi‑Fi). Ogni mini-game è un compito con punteggio minimo e consegna.
+4. Sulla **stessa board** compaiono anche le attività pratiche assegnate dal docente (RJ45, desktop Windows/Linux, ecc.). Si aprono come un ticket e si chiudono al raggiungimento del punteggio.
 5. Toggle lingua **IT/EN** nell’header per laboratori bilingue.
 
 ### Roadmap funzioni

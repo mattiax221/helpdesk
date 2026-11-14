@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Ticket,
   Users,
-  Gamepad2,
   LogOut,
   ClipboardCheck,
   ListTodo,
@@ -42,12 +41,10 @@ export function AppShell({
     { href: "/teacher/tickets/new", label: t("nav_new_ticket"), icon: Ticket },
     { href: "/teacher/review", label: t("nav_review"), icon: ClipboardCheck },
     { href: "/teacher/notifications", label: t("nav_notifications"), icon: Bell },
-    { href: "/lab", label: t("nav_lab"), icon: Gamepad2 },
     { href: "/roadmap", label: t("nav_roadmap"), icon: ListTodo },
   ];
   const studentNav: NavItem[] = [
     { href: "/student", label: t("nav_board"), icon: LayoutDashboard },
-    { href: "/lab", label: t("nav_lab"), icon: Gamepad2 },
     { href: "/roadmap", label: t("nav_roadmap"), icon: ListTodo },
   ];
   const nav = role === "TEACHER" ? teacherNav : studentNav;

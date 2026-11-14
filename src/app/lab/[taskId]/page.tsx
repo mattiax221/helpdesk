@@ -42,13 +42,23 @@ export default async function LabTaskPage({
   if (!isOwner && !isMember) notFound();
 
   const game = getLabGame(task.gameKey);
-  const mySubmission = task.submissions.find((s) => s.userId === session.user.id);
+  let mySubmission = task.submissions.find((s) => s.userId === session.user.id);
+  if (mySubmission && mySubmission.status === "ASSIGNED") {
+    mySubmission = await prisma.labTaskSubmission.update({
+      where: { id: mySubmission.id },
+      data: { status: "IN_PROGRESS" },
+      include: { user: { select: { id: true, name: true } } },
+    });
+  }
+
+  const backHref = role === "TEACHER" ? `/teacher/classrooms/${task.classroomId}` : "/student";
+  const backLabel = role === "TEACHER" ? "← Classe" : "← Board";
 
   return (
     <AppShell role={role} userName={session.user.name || "Utente"} xp={user?.xp ?? 0}>
       <div className="mb-4">
-        <Link href="/lab" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
-          ← Compiti Lab
+        <Link href={backHref} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
+          {backLabel}
         </Link>
       </div>
 
