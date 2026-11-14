@@ -127,7 +127,7 @@ export function EvaluationForm({
         </div>
       )}
 
-      <Button className="bg-teal-700 hover:bg-teal-800" disabled={loading}>
+      <Button type="submit" className="bg-teal-700 hover:bg-teal-800" disabled={loading}>
         Salva valutazione
       </Button>
     </form>

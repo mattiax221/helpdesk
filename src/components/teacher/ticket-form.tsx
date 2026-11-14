@@ -165,6 +165,18 @@ export function TicketForm({
       toast.error("Seleziona una classe");
       return;
     }
+    if (!form.title.trim() || form.title.trim().length < 3) {
+      toast.error("Compila il titolo (o scegli uno scenario / catena)");
+      return;
+    }
+    if (!form.description.trim() || form.description.trim().length < 10) {
+      toast.error("Compila la descrizione cliente");
+      return;
+    }
+    if (!form.secretNotes.trim() || form.secretNotes.trim().length < 5) {
+      toast.error("Compila le note segrete (causa + soluzione)");
+      return;
+    }
     setLoading(true);
 
     const logs = form.fakeLogs
@@ -609,7 +621,7 @@ export function TicketForm({
               onChange={(e) => update("clientHints", e.target.value)}
             />
           </div>
-          <Button className="bg-teal-700 hover:bg-teal-800" disabled={loading}>
+          <Button type="submit" className="bg-teal-700 hover:bg-teal-800" disabled={loading}>
             {loading ? "Salvataggio..." : "Crea e assegna ticket"}
           </Button>
         </CardContent>

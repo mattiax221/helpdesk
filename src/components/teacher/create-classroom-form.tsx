@@ -60,7 +60,7 @@ export function CreateClassroomForm() {
             <Label htmlFor="description">Descrizione</Label>
             <Textarea id="description" name="description" placeholder="Obiettivi del laboratorio..." />
           </div>
-          <Button className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading}>
+          <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading}>
             Crea classe
           </Button>
         </form>
