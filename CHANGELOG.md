@@ -3,6 +3,11 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 Versioning: vedi [docs/VERSIONING.md](./docs/VERSIONING.md).
 
+## [0.1.7] — 2026-11-14
+
+### Aggiunto
+- Banco di lavoro: messa in servizio di un PC, cambio del DNS di istituto, due ricerche guasto su prove (DHCP 169.254 e file hosts) e un piano di indirizzamento VLSM. Il voto è sui controlli e sul report, non su un timer. Il docente legge la consegna.
+
 ## [0.1.6] — 2026-11-14
 
 ### Aggiunto

@@ -110,20 +110,23 @@ export default async function LabTaskPage({
           <CardHeader>
             <CardTitle className="text-base">{game?.title || task.gameKey}</CardTitle>
             <CardDescription>
-              Completa il mini-game. Se raggiungi almeno {task.minScore} punti il compito risulta
-              consegnato (puoi ritentare per migliorare).
+              {task.gameKey === "bench"
+                ? "Svolgi l’intervento, verifica i controlli e scrivi il report. Sotto la soglia puoi ritentare."
+                : `Completa l’esercizio. Se raggiungi almeno ${task.minScore} punti il compito risulta consegnato (puoi ritentare per migliorare).`}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <LabGamePlayer gameKey={task.gameKey} taskId={task.id} minScore={task.minScore} />
           </CardContent>
         </Card>
-      ) : task.gameKey === "ossim" ? (
+      ) : task.gameKey === "ossim" || task.gameKey === "bench" ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Report desktop</CardTitle>
+            <CardTitle className="text-base">
+              {task.gameKey === "bench" ? "Report dell’intervento" : "Report desktop"}
+            </CardTitle>
             <CardDescription>
-              Testo scritto dallo studente, azioni sul PC simulato e voto automatico. Il commento resta visibile allo studente.
+              Testo scritto dallo studente, controlli superati e voto automatico. Il commento resta visibile allo studente.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -141,11 +141,11 @@ export const ROADMAP_CATALOG: RoadmapSeed[] = [
   {
     title: "Task di tipo diverso",
     description:
-      "Oltre al ticket e al desktop: procedure guidate, ricerca guasti e configurazioni. I casi desktop nuovi ci sono già. Tutte finiscono sulla stessa board.",
+      "Banco di lavoro: messa in servizio, cambio DNS, ricerca guasto sulle prove e piano VLSM. Stessa board, report visibile al docente.",
     category: "Didattica",
     priority: "HIGH",
-    status: "PLANNED",
-    sortOrder: 4,
+    status: "DONE",
+    sortOrder: 120,
   },
   {
     title: "Documentazione apribile dallo studente",

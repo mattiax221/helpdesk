@@ -19,6 +19,7 @@ const GAME_LABELS: Record<string, string> = {
   cli: "CLI",
   wifi: "Wi‑Fi",
   ossim: "Desktop OS",
+  bench: "Banco di lavoro",
 };
 
 export function LabLeaderboard({

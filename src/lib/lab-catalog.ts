@@ -6,7 +6,8 @@ export type LabGameKey =
   | "osi"
   | "cli"
   | "wifi"
-  | "ossim";
+  | "ossim"
+  | "bench";
 
 export type LabGameDef = {
   key: LabGameKey;
@@ -101,6 +102,18 @@ export const LAB_GAMES: LabGameDef[] = [
     skill: "Sistemi / troubleshooting",
     estimatedMinutes: 15,
     defaultMinScore: 60,
+  },
+  {
+    key: "bench",
+    title: "Banco di lavoro",
+    titleEn: "Workshop bench",
+    description:
+      "Interventi seri: messa in servizio, cambio DNS, ricerca guasto su prove reali e piano di indirizzamento. Report obbligatorio.",
+    descriptionEn:
+      "Serious jobs: PC provisioning, DNS cutover, fault-finding from evidence, and an address plan. A written report is required.",
+    skill: "Troubleshooting",
+    estimatedMinutes: 20,
+    defaultMinScore: 70,
   },
 ];
 

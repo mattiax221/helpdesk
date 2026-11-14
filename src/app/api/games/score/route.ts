@@ -20,6 +20,7 @@ const XP_BY_GAME: Record<(typeof LAB_GAME_KEYS)[number], number> = {
   cli: 15,
   wifi: 15,
   ossim: 25,
+  bench: 30,
 };
 
 const DAILY_XP_CAP = 90;
