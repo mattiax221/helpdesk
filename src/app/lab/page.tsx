@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getLabGame } from "@/lib/lab-catalog";
 import { cn } from "@/lib/utils";
 import { ClipboardList, Clock3 } from "lucide-react";
+import { ensureMarcoDesktopTask } from "@/lib/ensure-marco-desktop";
 
 const STATUS_LABEL: Record<string, string> = {
   ASSIGNED: "Da fare",
@@ -18,6 +19,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default async function LabPage() {
   const session = await requireSession();
+  await ensureMarcoDesktopTask();
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   const role = session.user.role === "TEACHER" ? "TEACHER" : "STUDENT";
 

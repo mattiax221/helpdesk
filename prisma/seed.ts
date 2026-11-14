@@ -314,6 +314,22 @@ async function main() {
     });
   }
 
+  await prisma.labTask.create({
+    data: {
+      classroomId: classroom.id,
+      createdById: teacher.id,
+      gameKey: "ossim",
+      title: "Prova desktop — Marco Rossi",
+      instructions:
+        "Apri il desktop simulato, risolvi un caso solo software (DNS, proxy o Linux) e scrivi cosa hai fatto. Punteggio minimo 60.",
+      minScore: 60,
+      dueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      submissions: {
+        create: [{ userId: students[0].id, status: "ASSIGNED" }],
+      },
+    },
+  });
+
   const roadmapSeed = [
     {
       title: "Catene di incidenti collegati",

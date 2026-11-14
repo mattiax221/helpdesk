@@ -1,5 +1,6 @@
 import { requireRole } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { ensureMarcoDesktopTask } from "@/lib/ensure-marco-desktop";
 import { AppShell } from "@/components/app-shell";
 import { KanbanBoard } from "@/components/kanban/board";
 import { LocalizedHeading } from "@/components/localized-heading";
@@ -7,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default async function StudentBoardPage() {
   const session = await requireRole("STUDENT");
+  await ensureMarcoDesktopTask();
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   const assignments = await prisma.ticketAssignment.findMany({
     where: { assigneeId: session.user.id },
